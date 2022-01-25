@@ -1,0 +1,4 @@
+[flake8]
+exclude = .git, venv, */tests.py, */migrations/*
+max-line-length = 79
+max-complexity = 10
