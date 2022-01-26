@@ -2,6 +2,13 @@ import os
 from flask import Flask
 from application.db import db, migrate
 from application.ma import ma
+from application.university.models.user import (
+    UserModel,
+    StudentModel,
+    TeacherModel,
+)
+from application.university.models.position import PositionModel
+from application.university.resources.user import user_blprnt
 
 
 def create_app():
@@ -17,4 +24,9 @@ def create_app():
     def create_tables():
         db.create_all()
 
+    register_blueprints(app)
     return app
+
+
+def register_blueprints(app):
+    app.register_blueprint(user_blprnt)

@@ -1,4 +1,9 @@
 [flake8]
-exclude = .git, venv, */tests.py, */migrations/*
-max-line-length = 79
+ignore = F401
+exclude =
+    .git,
+    venv,
+    */tests.py,
+    migrations/*
+max-line-length = 100
 max-complexity = 10
