@@ -127,5 +127,5 @@ def delete_student(student_id):
     student = StudentModel.get_by_id(student_id)
     if not student:
         return {"message": USER_NOT_FOUND_BY_ID.format(student_id)}, 400
-    student.remove_from_db()
+    student.remove_from_db(student.user)
     return {"message": SUCCESSFULLY_DELETED.format(student_id)}, 200

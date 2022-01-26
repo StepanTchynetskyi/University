@@ -36,12 +36,15 @@ class UserModel(db.Model):
 class StudentModel(db.Model):
     __tablename__ = "student"
     id = db.Column(
-        UUID(as_uuid=True), db.ForeignKey(UserModel.id), primary_key=True
+        UUID(as_uuid=True),
+        db.ForeignKey(UserModel.id, ondelete="CASCADE"),
+        primary_key=True,
     )
     year_of_study = db.Column(db.SmallInteger, nullable=False)
 
-    def remove_from_db(self):
+    def remove_from_db(self, user):
         db.session.delete(self)
+        db.session.delete(user)
         db.session.commit()
 
     @classmethod
