@@ -1,5 +1,6 @@
 from marshmallow import EXCLUDE
 from application.ma import ma
+from application.university.schemas.position import PositionSchema
 from application.university.models.user import (
     UserModel,
     StudentModel,
@@ -28,9 +29,11 @@ class StudentSchema(ma.SQLAlchemyAutoSchema):
 
 class TeacherSchema(ma.SQLAlchemyAutoSchema):
     user = ma.Nested(UserSchema, many=False)
+    position = ma.Nested(PositionSchema, many=False)
 
     class Meta:
         model = TeacherModel
         load_instance = True
         unknown = EXCLUDE
         include_fk = True
+        dump_only = ("id",)

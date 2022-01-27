@@ -9,6 +9,7 @@ from application.university.models.user import (
 )
 from application.university.models.position import PositionModel
 from application.university.resources.user import user_blprnt
+from application.university.resources.position import position_blprnt
 
 
 def create_app():
@@ -30,3 +31,4 @@ def create_app():
 
 def register_blueprints(app):
     app.register_blueprint(user_blprnt)
+    app.register_blueprint(position_blprnt)

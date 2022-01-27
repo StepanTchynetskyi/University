@@ -42,9 +42,9 @@ class StudentModel(db.Model):
     )
     year_of_study = db.Column(db.SmallInteger, nullable=False)
 
-    def remove_from_db(self, user):
+    def remove_from_db(self):
         db.session.delete(self)
-        db.session.delete(user)
+        db.session.delete(self.user)
         db.session.commit()
 
     @classmethod
@@ -53,7 +53,7 @@ class StudentModel(db.Model):
 
     @classmethod
     def get_all_students(cls):
-        return cls.query.all()
+        return cls.query.join(UserModel).filter(UserModel.is_active)
 
 
 class TeacherModel(db.Model):
@@ -62,8 +62,23 @@ class TeacherModel(db.Model):
         UUID(as_uuid=True), db.ForeignKey(UserModel.id), primary_key=True
     )
     position_id = db.Column(
-        UUID(as_uuid=True), db.ForeignKey("position.id"), nullable=False
+        UUID(as_uuid=True),
+        db.ForeignKey("position.id", ondelete="SET NULL"),
+        nullable=False,
     )
+
+    @classmethod
+    def get_all_teachers(cls):
+        return cls.query.join(UserModel).filter(UserModel.is_active)
+
+    @classmethod
+    def get_by_id(cls, teacher_id):
+        return cls.query.filter_by(id=teacher_id).first()
+
+    def remove_from_db(self):
+        db.session.delete(self)
+        db.session.delete(self.user)
+        db.session.commit()
 
 
 def save_to_db(specific_user):
