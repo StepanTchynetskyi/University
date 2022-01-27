@@ -1,7 +1,9 @@
+import re
+
 MAX_EMAIL_LENGTH = 320
 MAX_FIRST_NAME_LENGTH = 60
 MAX_LAST_NAME_LENGTH = 80
-MAX_POSITION_LENGTH = 50
+MAX_POSITION_NAME_LENGTH = 50
 MAX_PASSWORD_LENGTH = 72
 
 
@@ -20,3 +22,12 @@ NOT_ACTIVE_USER = "USER with <id={}> Is Not Active"
 STUDENT = "Student"
 TEACHER = "Teacher"
 POSITION = "Position"
+
+
+HAS_LOWERCASE_LETTERS = re.compile(r"[a-z]")
+HAS_UPPERCASE_LETTERS = re.compile(r"[A-Z]")
+HAS_NUMBERS = re.compile(r"[0-9]")
+HAS_SYMBOLS = re.compile(r"[~`! @#$%^&*()_\-+={[}]|\:;\"\'<,>.?/]")
+VALIDATE_EMAIL = re.compile(
+    r"([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})+"
+)

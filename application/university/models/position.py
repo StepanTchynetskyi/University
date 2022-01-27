@@ -4,7 +4,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy import exc
 
 from application import db
-from application.university.utils.constants import MAX_POSITION_LENGTH
+from application.university.utils.constants import MAX_POSITION_NAME_LENGTH
 
 
 class PositionModel(db.Model):
@@ -12,7 +12,7 @@ class PositionModel(db.Model):
 
     id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     position_name = db.Column(
-        db.String(MAX_POSITION_LENGTH), nullable=False, unique=True
+        db.String(MAX_POSITION_NAME_LENGTH), nullable=False, unique=True
     )
     teacher = db.relationship("TeacherModel", backref="position")
 
