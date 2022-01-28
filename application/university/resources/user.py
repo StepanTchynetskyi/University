@@ -62,7 +62,7 @@ def process_specific_user(user_id, specific_model, user_type):
         raise UserSearchException(
             message=NOT_FOUND_BY_ID.format(user_type, user_id), status_code=400
         )
-    if not specific_user.user.is_active:
+    if not specific_user.is_active:
         raise UserSearchException(
             message=NOT_ACTIVE_USER.format(user_id), status_code=400
         )
@@ -150,7 +150,7 @@ def soft_delete_student(student_id):
         student = process_specific_user(student_id, StudentModel, STUDENT)
     except UserSearchException as err:
         return {"message": str(err)}, err.status_code
-    student.user.is_active = False
+    student.is_active = False
     error = save_to_db(student.user)
     if error:
         return {"message": SOMETHING_WENT_WRONG.format(error)}, 400
@@ -231,7 +231,7 @@ def soft_delete_teacher(teacher_id):
         teacher = process_specific_user(teacher_id, TeacherModel, TEACHER)
     except UserSearchException as err:
         return {"message": str(err)}, err.status_code
-    teacher.user.is_active = False
+    teacher.is_active = False
     error = save_to_db(teacher.user)
     if error:
         return {"message": SOMETHING_WENT_WRONG.format(error)}, 400

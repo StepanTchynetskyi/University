@@ -37,7 +37,7 @@ class UserSchema(ma.SQLAlchemyAutoSchema):
 
     @validates("email")
     def validate_email(self, value):
-        if VALIDATE_EMAIL.fullmatch(value):
+        if not VALIDATE_EMAIL.fullmatch(value):
             raise ValidationError("Invalid Email Address")
 
     @validates("password")
@@ -75,7 +75,7 @@ class StudentSchema(ma.SQLAlchemyAutoSchema):
         load_instance = True
         unknown = EXCLUDE
         include_fk = True
-        dump_only = ("id",)
+        dump_only = ("id", "is_active")
 
     @validates("year_of_study")
     def validate_year_of_study(self, value):
@@ -92,4 +92,4 @@ class TeacherSchema(ma.SQLAlchemyAutoSchema):
         load_instance = True
         unknown = EXCLUDE
         include_fk = True
-        dump_only = ("id",)
+        dump_only = ("id", "is_active")

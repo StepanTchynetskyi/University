@@ -20,7 +20,6 @@ class UserModel(db.Model):
     last_name = db.Column(db.String(MAX_LAST_NAME_LENGTH), nullable=False)
     password = db.Column(db.String(MAX_PASSWORD_LENGTH), nullable=False)
     age = db.Column(db.SmallInteger)
-    is_active = db.Column(db.Boolean, default=True)
     student = db.relationship(
         "StudentModel", uselist=False, cascade="all,delete", backref="user"
     )
@@ -40,6 +39,7 @@ class StudentModel(db.Model):
         db.ForeignKey(UserModel.id, ondelete="CASCADE"),
         primary_key=True,
     )
+    is_active = db.Column(db.Boolean, default=True)
     year_of_study = db.Column(db.SmallInteger, nullable=False)
 
     def remove_from_db(self):
@@ -53,7 +53,7 @@ class StudentModel(db.Model):
 
     @classmethod
     def get_all_students(cls):
-        return cls.query.join(UserModel).filter(UserModel.is_active)
+        return cls.query.filter_by(is_active=True)
 
 
 class TeacherModel(db.Model):
@@ -61,6 +61,7 @@ class TeacherModel(db.Model):
     id = db.Column(
         UUID(as_uuid=True), db.ForeignKey(UserModel.id), primary_key=True
     )
+    is_active = db.Column(db.Boolean, default=True)
     position_id = db.Column(
         UUID(as_uuid=True),
         db.ForeignKey("position.id", ondelete="SET NULL"),
@@ -69,7 +70,7 @@ class TeacherModel(db.Model):
 
     @classmethod
     def get_all_teachers(cls):
-        return cls.query.join(UserModel).filter(UserModel.is_active)
+        return cls.query.join.filter_by(is_active=True)
 
     @classmethod
     def get_by_id(cls, teacher_id):
