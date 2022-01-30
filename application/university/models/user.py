@@ -1,8 +1,8 @@
-import uuid
-
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy import exc
-from application import db
+from sqlalchemy.dialects.postgresql import UUID
+
+from application.db import db
+from application.university.utils.base_model import BaseModel
 from application.university.utils.constants import (
     MAX_EMAIL_LENGTH,
     MAX_FIRST_NAME_LENGTH,
@@ -11,10 +11,9 @@ from application.university.utils.constants import (
 )
 
 
-class UserModel(db.Model):
+class UserModel(BaseModel):
     __tablename__ = "user"
 
-    id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     email = db.Column(db.String(MAX_EMAIL_LENGTH), nullable=False, unique=True)
     first_name = db.Column(db.String(MAX_FIRST_NAME_LENGTH), nullable=False)
     last_name = db.Column(db.String(MAX_LAST_NAME_LENGTH), nullable=False)
@@ -32,8 +31,9 @@ class UserModel(db.Model):
         return cls.query.filter_by(email=email).first()
 
 
-class StudentModel(db.Model):
+class StudentModel(BaseModel):
     __tablename__ = "student"
+
     id = db.Column(
         UUID(as_uuid=True),
         db.ForeignKey(UserModel.id, ondelete="CASCADE"),
@@ -42,22 +42,22 @@ class StudentModel(db.Model):
     is_active = db.Column(db.Boolean, default=True)
     year_of_study = db.Column(db.SmallInteger, nullable=False)
 
+    @classmethod
+    def get_all_records(cls):
+        return cls.query.filter_by(is_active=True)
+
     def remove_from_db(self):
+        teacher = TeacherModel.get_by_id(self.id)
+        if teacher:
+            db.session.delete(teacher)
         db.session.delete(self)
         db.session.delete(self.user)
         db.session.commit()
 
-    @classmethod
-    def get_by_id(cls, student_id):
-        return cls.query.filter_by(id=student_id).first()
 
-    @classmethod
-    def get_all_students(cls):
-        return cls.query.filter_by(is_active=True)
-
-
-class TeacherModel(db.Model):
+class TeacherModel(BaseModel):
     __tablename__ = "teacher"
+
     id = db.Column(
         UUID(as_uuid=True), db.ForeignKey(UserModel.id), primary_key=True
     )
@@ -67,29 +67,29 @@ class TeacherModel(db.Model):
         db.ForeignKey("position.id", ondelete="SET NULL"),
         nullable=False,
     )
+    specialty = db.relationship(
+        "SpecialtyModel",
+        uselist=False,
+        cascade="all,delete",
+        backref="teacher",
+    )
+    group = db.relationship(
+        "GroupModel",
+        cascade="all,delete",
+        backref="teacher",
+    )
 
     @classmethod
-    def get_all_teachers(cls):
-        return cls.query.join.filter_by(is_active=True)
-
-    @classmethod
-    def get_by_id(cls, teacher_id):
-        return cls.query.filter_by(id=teacher_id).first()
+    def get_all_records(cls):
+        return cls.query.filter_by(is_active=True)
 
     def remove_from_db(self):
+        student = StudentModel.get_by_id(self.id)
+        if student:
+            db.session.delete(student)
         db.session.delete(self)
         db.session.delete(self.user)
         db.session.commit()
-
-
-def save_to_db(specific_user):
-    db.session.add(specific_user)
-    try:
-        db.session.commit()
-    except exc.SQLAlchemyError as err:
-        db.session.rollback()
-        return str(err)
-    return False
 
 
 def commit_specific_user(user, specific_user):
