@@ -1,9 +1,6 @@
-import re
-
 from marshmallow import EXCLUDE, validates, ValidationError
 
 from application.ma import ma
-from application.university.schemas.position import PositionSchema
 from application.university.models.user import (
     UserModel,
     StudentModel,
@@ -24,6 +21,7 @@ class UserSchema(ma.SQLAlchemyAutoSchema):
         load_instance = True
         unknown = EXCLUDE
         load_only = ("password",)
+        dump_only = ("id", "created_on", "updated_on")
 
     @validates("first_name")
     def validate_first_name(self, value):
@@ -68,14 +66,15 @@ class UserSchema(ma.SQLAlchemyAutoSchema):
 
 
 class StudentSchema(ma.SQLAlchemyAutoSchema):
-    user = ma.Nested(UserSchema, many=False)
+    user = ma.Nested("UserSchema", many=False)
+    groups = ma.Nested("GroupSchema", many=True)
 
     class Meta:
         model = StudentModel
         load_instance = True
         unknown = EXCLUDE
         include_fk = True
-        dump_only = ("id", "is_active")
+        dump_only = ("id", "is_active", "created_on", "updated_on")
 
     @validates("year_of_study")
     def validate_year_of_study(self, value):
@@ -84,12 +83,15 @@ class StudentSchema(ma.SQLAlchemyAutoSchema):
 
 
 class TeacherSchema(ma.SQLAlchemyAutoSchema):
-    user = ma.Nested(UserSchema, many=False)
-    position = ma.Nested(PositionSchema, many=False)
+    user = ma.Nested("UserSchema", many=False)
+    position = ma.Nested("PositionSchema", many=False)
+    specialty = ma.Nested("SpecialtySchema", many=False)
+
+    subjects = ma.Nested("SubjectSchema", many=True)
 
     class Meta:
         model = TeacherModel
         load_instance = True
         unknown = EXCLUDE
         include_fk = True
-        dump_only = ("id", "is_active")
+        dump_only = ("id", "is_active", "created_on", "updated_on")

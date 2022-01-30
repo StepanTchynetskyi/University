@@ -8,8 +8,12 @@ from application.university.models.user import (
     TeacherModel,
 )
 from application.university.models.position import PositionModel
+from application.university.models.specialty import SpecialtyModel
+from application.university.models.group import GroupModel
+from application.university.models.subject import SubjectModel
 from application.university.resources.user import user_blprnt
 from application.university.resources.position import position_blprnt
+from application.university.resources.specialty import specialty_blprnt
 
 
 def create_app():
@@ -32,3 +36,4 @@ def create_app():
 def register_blueprints(app):
     app.register_blueprint(user_blprnt)
     app.register_blueprint(position_blprnt)
+    app.register_blueprint(specialty_blprnt)

@@ -34,16 +34,14 @@ def create_position():
     error = position.save_to_db()
     if error:
         return {"message": SOMETHING_WENT_WRONG.format(error)}, 400
-    return {
-        "message": CREATED_SUCCESSFULLY.format("Position", position.id)
-    }, 201
+    return {"message": CREATED_SUCCESSFULLY.format(POSITION, position.id)}, 201
 
 
 @position_blprnt.route("/", methods=["GET"])
 def get_positions():
     positions = [
         position_schema.dump(position)
-        for position in PositionModel.get_all_positions()
+        for position in PositionModel.get_all_records()
     ]
     return jsonify(positions), 200
 

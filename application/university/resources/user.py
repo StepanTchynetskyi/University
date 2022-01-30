@@ -10,7 +10,6 @@ from application.university.schemas.user import (
 from application.university.models.position import PositionModel
 from application.university.models.user import (
     commit_specific_user,
-    save_to_db,
     StudentModel,
     TeacherModel,
 )
@@ -21,7 +20,7 @@ from application.university.utils.custom_exceptions import (
 from application.university.utils.constants import (
     PW_DO_NOT_MATCH,
     CREATED_SUCCESSFULLY,
-    POSITION_DOES_NOT_EXIST,
+    DOES_NOT_EXIST,
     NOT_FOUND_BY_ID,
     UPDATED_SUCCESSFULLY,
     SUCCESSFULLY_DELETED,
@@ -30,6 +29,7 @@ from application.university.utils.constants import (
     NOT_ACTIVE_USER,
     STUDENT,
     TEACHER,
+    POSITION,
 )
 
 user_blprnt = Blueprint("users", __name__, url_prefix="/users")
@@ -64,7 +64,7 @@ def process_specific_user(user_id, specific_model, user_type):
         )
     if not specific_user.is_active:
         raise UserSearchException(
-            message=NOT_ACTIVE_USER.format(user_id), status_code=400
+            message=NOT_ACTIVE_USER.format(user_type, user_id), status_code=400
         )
     return specific_user
 
@@ -85,7 +85,7 @@ def update_specific_user(specific_user, specific_schema):
         student = specific_schema.load(
             specific_user_json, instance=specific_user, partial=True
         )
-        error = save_to_db(student)
+        error = student.save_to_db()
     return error
 
 
@@ -106,7 +106,7 @@ def create_student():
 def get_students():
     students = [
         student_schema.dump(student)
-        for student in StudentModel.get_all_students()
+        for student in StudentModel.get_all_records()
     ]
     return jsonify(students), 200
 
@@ -151,7 +151,7 @@ def soft_delete_student(student_id):
     except UserSearchException as err:
         return {"message": str(err)}, err.status_code
     student.is_active = False
-    error = save_to_db(student.user)
+    error = student.user.save_to_db()
     if error:
         return {"message": SOMETHING_WENT_WRONG.format(error)}, 400
     return {"message": SUCCESSFULLY_DELETED.format(STUDENT, student_id)}, 200
@@ -168,7 +168,7 @@ def create_teacher():
     position_id = user_json.get("position_id", None)
     position = PositionModel.get_by_id(position_id)
     if not position:
-        return {"message": POSITION_DOES_NOT_EXIST.format(position_id)}, 400
+        return {"message": DOES_NOT_EXIST.format(POSITION, position_id)}, 400
     teacher.id = user.id
     error = commit_specific_user(user, teacher)
     if error:
@@ -180,7 +180,7 @@ def create_teacher():
 def get_teachers():
     teachers = [
         teacher_schema.dump(teacher)
-        for teacher in TeacherModel.get_all_teachers()
+        for teacher in TeacherModel.get_all_records()
     ]
     return jsonify(teachers), 200
 
@@ -205,7 +205,7 @@ def update_teacher(teacher_id):
         position = PositionModel.get_by_id(position_id)
         if not position:
             return {
-                "message": POSITION_DOES_NOT_EXIST.format(position.id)
+                "message": DOES_NOT_EXIST.format(POSITION, position.id)
             }, 400
     error = update_specific_user(teacher, teacher_schema)
     if error:
@@ -232,7 +232,7 @@ def soft_delete_teacher(teacher_id):
     except UserSearchException as err:
         return {"message": str(err)}, err.status_code
     teacher.is_active = False
-    error = save_to_db(teacher.user)
+    error = teacher.user.save_to_db()
     if error:
         return {"message": SOMETHING_WENT_WRONG.format(error)}, 400
     return {"message": SUCCESSFULLY_DELETED.format(STUDENT, teacher_id)}, 200
