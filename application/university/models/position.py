@@ -9,7 +9,9 @@ class PositionModel(BaseModel):
     position_name = db.Column(
         db.String(MAX_NAME_LENGTH), nullable=False, unique=True
     )
-    teacher = db.relationship("TeacherModel", backref="position")
+    teachers = db.relationship(
+        "TeacherModel", uselist=True, back_populates="position"
+    )
 
     @classmethod
     def get_by_position_name(cls, position_name):

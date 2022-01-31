@@ -9,8 +9,8 @@ from application.db import db
 class BaseModel(db.Model):
     __abstract__ = True
     id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    created_on = db.Column(db.DateTime, server_default=db.func.now())
-    updated_on = db.Column(
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
+    updated_at = db.Column(
         db.DateTime,
         server_default=db.func.now(),
         server_onupdate=db.func.now(),

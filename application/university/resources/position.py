@@ -8,7 +8,7 @@ from application.university.utils.constants import (
     POSITION,
     UPDATED_SUCCESSFULLY,
     SUCCESSFULLY_DELETED,
-    ALREADY_EXIST,
+    ALREADY_EXISTS,
     SOMETHING_WENT_WRONG,
 )
 
@@ -24,11 +24,11 @@ position_schema = PositionSchema()
 def create_position():
     position_json = request.get_json()
     position = PositionModel.get_by_position_name(
-        position_json.get("position_name", None)
+        str(position_json.get("position_name", None))
     )
     if position:
         return {
-            "message": ALREADY_EXIST.format(POSITION, position.position_name)
+            "message": ALREADY_EXISTS.format(POSITION, position.position_name)
         }, 400
     position = position_schema.load(position_json)
     error = position.save_to_db()
@@ -51,7 +51,7 @@ def get_position(position_id):
     position = PositionModel.get_by_id(position_id)
     if not position:
         return {"message": NOT_FOUND_BY_ID.format(POSITION, position_id)}, 400
-    return {"message": position_schema.dump(position)}, 200
+    return position_schema.dump(position), 200
 
 
 @position_blprnt.route("/position/<uuid:position_id>", methods=["PUT"])
@@ -60,6 +60,15 @@ def update_position(position_id):
     if not position:
         return {"message": NOT_FOUND_BY_ID.format(POSITION, position_id)}, 400
     position_json = request.get_json()
+    position_name = position_json.get("position_name", None)
+    if position_name:
+        position_obj = PositionModel.get_by_position_name(str(position_name))
+        if position_obj:
+            return {
+                "message": ALREADY_EXISTS.format(
+                    POSITION, position_obj.position_name
+                )
+            }, 400
     position = position_schema.load(
         position_json, instance=position, partial=True
     )
@@ -75,4 +84,4 @@ def delete_position(position_id):
     if not position:
         return {"message": NOT_FOUND_BY_ID.format(POSITION, position_id)}, 400
     position.remove_from_db()
-    return {"message": SUCCESSFULLY_DELETED.format(POSITION, position_id)}
+    return {"message": SUCCESSFULLY_DELETED.format(POSITION, position_id)}, 200

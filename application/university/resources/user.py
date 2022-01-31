@@ -15,7 +15,7 @@ from application.university.models.user import (
 )
 from application.university.utils.custom_exceptions import (
     CreateUserException,
-    UserSearchException,
+    SearchException,
 )
 from application.university.utils.constants import (
     PW_DO_NOT_MATCH,
@@ -24,7 +24,7 @@ from application.university.utils.constants import (
     NOT_FOUND_BY_ID,
     UPDATED_SUCCESSFULLY,
     SUCCESSFULLY_DELETED,
-    ALREADY_EXIST,
+    ALREADY_EXISTS,
     SOMETHING_WENT_WRONG,
     NOT_ACTIVE_USER,
     STUDENT,
@@ -48,7 +48,7 @@ def process_user_data(specific_user_model, user_type):
         specific_user = specific_user_model.get_by_id(user.id)
         if specific_user:
             raise CreateUserException(
-                ALREADY_EXIST.format(user_type, user.email)
+                ALREADY_EXISTS.format(user_type, user.email)
             )
     else:
         user = user_schema.load(user_json)
@@ -59,11 +59,11 @@ def process_user_data(specific_user_model, user_type):
 def process_specific_user(user_id, specific_model, user_type):
     specific_user = specific_model.get_by_id(user_id)
     if not specific_user:
-        raise UserSearchException(
+        raise SearchException(
             message=NOT_FOUND_BY_ID.format(user_type, user_id), status_code=400
         )
     if not specific_user.is_active:
-        raise UserSearchException(
+        raise SearchException(
             message=NOT_ACTIVE_USER.format(user_type, user_id), status_code=400
         )
     return specific_user
@@ -95,8 +95,8 @@ def create_student():
         processed_user = process_user_data(StudentModel, STUDENT)
     except CreateUserException as err:
         return {"message": str(err)}, 400
-    user_json, user = processed_user
-    student = student_schema.load(user_json)
+    student_json, user = processed_user
+    student = student_schema.load(student_json)
     student.id = user.id
     commit_specific_user(user, student)
     return {"message": CREATED_SUCCESSFULLY.format("Student", student.id)}, 201
@@ -115,16 +115,16 @@ def get_students():
 def get_student(student_id):
     try:
         student = process_specific_user(student_id, StudentModel, STUDENT)
-    except UserSearchException as err:
+    except SearchException as err:
         return {"message": str(err)}, err.status_code
-    return jsonify(student_schema.dump(student)), 200
+    return student_schema.dump(student), 200
 
 
 @user_blprnt.route("/students/student/<uuid:student_id>", methods=["PUT"])
 def update_student(student_id):
     try:
         student = process_specific_user(student_id, StudentModel, STUDENT)
-    except UserSearchException as err:
+    except SearchException as err:
         return {"message": str(err)}, err.status_code
     error = update_specific_user(student, student_schema)
     if error:
@@ -148,7 +148,7 @@ def hard_delete_student(student_id):
 def soft_delete_student(student_id):
     try:
         student = process_specific_user(student_id, StudentModel, STUDENT)
-    except UserSearchException as err:
+    except SearchException as err:
         return {"message": str(err)}, err.status_code
     student.is_active = False
     error = student.user.save_to_db()
@@ -163,9 +163,9 @@ def create_teacher():
         processed_user = process_user_data(TeacherModel, TEACHER)
     except CreateUserException as err:
         return {"message": str(err)}, 400
-    user_json, user = processed_user
-    teacher = teacher_schema.load(user_json)
-    position_id = user_json.get("position_id", None)
+    teacher_json, user = processed_user
+    teacher = teacher_schema.load(teacher_json)
+    position_id = teacher_json.get("position_id", None)
     position = PositionModel.get_by_id(position_id)
     if not position:
         return {"message": DOES_NOT_EXIST.format(POSITION, position_id)}, 400
@@ -189,16 +189,16 @@ def get_teachers():
 def get_teacher(teacher_id):
     try:
         teacher = process_specific_user(teacher_id, TeacherModel, TEACHER)
-    except UserSearchException as err:
+    except SearchException as err:
         return {"message": str(err)}, err.status_code
-    return {"message": teacher_schema.dump(teacher)}, 200
+    return teacher_schema.dump(teacher), 200
 
 
 @user_blprnt.route("/teachers/teacher/<uuid:teacher_id>", methods=["PUT"])
 def update_teacher(teacher_id):
     try:
         teacher = process_specific_user(teacher_id, TeacherModel, TEACHER)
-    except UserSearchException as err:
+    except SearchException as err:
         return {"message": str(err)}, err.status_code
     position_id = request.get_json().get("position_id", None)
     if position_id:
@@ -229,10 +229,42 @@ def hard_delete_teacher(teacher_id):
 def soft_delete_teacher(teacher_id):
     try:
         teacher = process_specific_user(teacher_id, TeacherModel, TEACHER)
-    except UserSearchException as err:
+    except SearchException as err:
         return {"message": str(err)}, err.status_code
     teacher.is_active = False
     error = teacher.user.save_to_db()
     if error:
         return {"message": SOMETHING_WENT_WRONG.format(error)}, 400
     return {"message": SUCCESSFULLY_DELETED.format(STUDENT, teacher_id)}, 200
+
+
+@user_blprnt.route(
+    "/teachers/teacher/<uuid:teacher_id>/appoint-subjects/appoint-subject/<uuid:subject_id>",
+    methods=["POST"],
+)
+def appoint_subject_to_teacher(teacher_id, subject_id):
+    return {"message: ": "TODO"}, 200
+
+
+@user_blprnt.route(
+    "/teachers/teacher/<uuid:teacher_id>/appoint-subjects/appoint-subjects",
+    methods=["POST"],
+)
+def appoint_subjects_to_teacher(teacher_id):
+    return {"message: ": "TODO"}, 200
+
+
+@user_blprnt.route(
+    "/students/student/<uuid:student_id>/appoint-groups/appoint-group/<uuid:group_id>",
+    methods=["POST"],
+)
+def appoint_group_to_student(student_id, group_id):
+    return {"message: ": "TODO"}, 200
+
+
+@user_blprnt.route(
+    "/students/student/<uuid:student_id>/appoint-groups", methods=["POST"]
+)
+def appoint_group_to_studens(student_id):
+    # TODO: add students from group, and students from list of UUIDs
+    return {"message: ": "TODO"}, 200

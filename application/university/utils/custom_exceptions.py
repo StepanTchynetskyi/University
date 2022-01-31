@@ -3,7 +3,7 @@ class CreateUserException(Exception):
         super(CreateUserException, self).__init__(message)
 
 
-class UserSearchException(Exception):
+class SearchException(Exception):
     def __init__(self, message, status_code=400):
-        super(UserSearchException, self).__init__(message)
+        super(SearchException, self).__init__(message)
         self.status_code = status_code

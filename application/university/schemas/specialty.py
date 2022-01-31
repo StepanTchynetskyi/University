@@ -1,12 +1,10 @@
-import datetime
-
 from marshmallow import EXCLUDE, validates, ValidationError
 from application.ma import ma
 from application.university.models.specialty import SpecialtyModel
 
 
 class SpecialtySchema(ma.SQLAlchemyAutoSchema):
-    teacher = ma.Nested("TeacherSchema", many=False)
+    teacher = ma.Nested("TeacherSchema", many=False, exclude=("specialty",))
 
     groups = ma.Nested("GroupSchema", many=True)
     subjects = ma.Nested("SubjectSchema", many=True)
@@ -16,15 +14,16 @@ class SpecialtySchema(ma.SQLAlchemyAutoSchema):
         load_instance = True
         unknown = EXCLUDE
         dump_only = ("id", "created_on", "updated_on")
+        include_fk = True
 
     @validates("name")
     def validate_name(self, value):
         if len(value) < 2:
             raise ValidationError("Too short name (min 2 symbols)")
 
-    # @validates("specialty_date")
-    # def validate_name(self, value):
-    #     print(value)
-    #     date_difference = value.year - datetime.datetime.year
-    #     if date_difference > 1 or date_difference < -1:
-    #         raise ValidationError("Wrong date provided")  # message should be changed
+    @validates("year")
+    def validate_year(self, value):
+        if value < 1088 or value > 10000:
+            raise ValidationError(
+                "Wrong year provided (year should be in this interval 1088 < year < 10000)"
+            )

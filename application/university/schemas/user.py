@@ -85,7 +85,7 @@ class StudentSchema(ma.SQLAlchemyAutoSchema):
 class TeacherSchema(ma.SQLAlchemyAutoSchema):
     user = ma.Nested("UserSchema", many=False)
     position = ma.Nested("PositionSchema", many=False)
-    specialty = ma.Nested("SpecialtySchema", many=False)
+    specialty = ma.Nested("SpecialtySchema", many=False, exclude=("teacher",))
 
     subjects = ma.Nested("SubjectSchema", many=True)
 

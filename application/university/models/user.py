@@ -67,6 +67,9 @@ class TeacherModel(BaseModel):
         db.ForeignKey("position.id", ondelete="SET NULL"),
         nullable=False,
     )
+    position = db.relationship(
+        "PositionModel", uselist=False, back_populates="teachers"
+    )
     specialty = db.relationship(
         "SpecialtyModel",
         uselist=False,

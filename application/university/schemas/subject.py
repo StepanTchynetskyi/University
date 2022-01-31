@@ -13,8 +13,24 @@ class SubjectSchema(ma.SQLAlchemyAutoSchema):
         load_instance = True
         unknown = EXCLUDE
         dump_only = ("id", "created_on", "updated_on")
+        include_fk = True
 
-    # @validates("position_name")
-    # def validate_position_name(self, value):
-    #     if len(value) < 2:
-    #         raise ValidationError("Too short position name (min 2 symbols)")
+    @validates("name")
+    def validate_name(self, value):
+        if len(value) < 2:
+            raise ValidationError("Too short name (min 2 symbols)")
+
+    @validates("year")
+    def validate_year(self, value):
+        if value < 1088 or value > 10000:
+            raise ValidationError(
+                "Wrong year provided (year should be in this interval 1088 < year < 10000)"
+            )
+
+    @validates("credits")
+    def validate_credits(self, value):
+        if value < 0 or value > 12:
+            raise ValidationError(
+                "Wrong value provided for credits "
+                "(credits should be in this interval 0 < year < 12)"
+            )

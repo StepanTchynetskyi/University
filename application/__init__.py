@@ -14,6 +14,8 @@ from application.university.models.subject import SubjectModel
 from application.university.resources.user import user_blprnt
 from application.university.resources.position import position_blprnt
 from application.university.resources.specialty import specialty_blprnt
+from application.university.resources.subject import subject_blprnt
+from application.university.resources.group import group_blprnt
 
 
 def create_app():
@@ -37,3 +39,5 @@ def register_blueprints(app):
     app.register_blueprint(user_blprnt)
     app.register_blueprint(position_blprnt)
     app.register_blueprint(specialty_blprnt)
+    app.register_blueprint(subject_blprnt)
+    app.register_blueprint(group_blprnt)

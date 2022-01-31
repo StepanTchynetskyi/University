@@ -14,15 +14,19 @@ DOES_NOT_EXIST = "{} <id={}> Does Not Exist."
 NOT_FOUND_BY_ID = "{} with <id={}> Not Found."
 UPDATED_SUCCESSFULLY = "{} with <id={}> Updated Successfully."
 SUCCESSFULLY_DELETED = "{} with <id={}> Deleted Successfully."
-ALREADY_EXIST = "{} with <{}> Already Exists."
+ALREADY_EXISTS = "{} with <{}> Already Exists."
+ALREADY_EXISTS_WITH_YEAR = "{} with <name={}> and <year={}> Already Exists."
 SOMETHING_WENT_WRONG = "Something Went Wrong {}."
 NOT_ACTIVE_USER = "{} with <id={}> is not Active"
 DATE_NOT_PROVIDED = "Error. Date Is Not Provided"
 
 STUDENT = "Student"
 TEACHER = "Teacher"
+CURATOR = "Curator"
 POSITION = "Position"
 SPECIALTY = "Specialty"
+SUBJECT = "Subject"
+GROUP = "Group"
 
 HAS_LOWERCASE_LETTERS = re.compile(r"[a-z]")
 HAS_UPPERCASE_LETTERS = re.compile(r"[A-Z]")
