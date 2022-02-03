@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request
 
 from application.university.models.position import PositionModel
 from application.university.schemas.position import PositionSchema
@@ -9,7 +9,6 @@ from application.university.utils.constants import (
     UPDATED_SUCCESSFULLY,
     SUCCESSFULLY_DELETED,
     ALREADY_EXISTS,
-    SOMETHING_WENT_WRONG,
 )
 
 # TODO: should be just for admin
@@ -31,10 +30,12 @@ def create_position():
             "message": ALREADY_EXISTS.format(POSITION, position.position_name)
         }, 400
     position = position_schema.load(position_json)
-    error = position.save_to_db()
-    if error:
-        return {"message": SOMETHING_WENT_WRONG.format(error)}, 400
-    return {"message": CREATED_SUCCESSFULLY.format(POSITION, position.id)}, 201
+    position.save_to_db()
+    position_json = position_schema.dump(position)
+    return {
+        "message": CREATED_SUCCESSFULLY.format(POSITION, position.id),
+        "data": position_json,
+    }, 201
 
 
 @position_blprnt.route("/", methods=["GET"])
@@ -43,7 +44,7 @@ def get_positions():
         position_schema.dump(position)
         for position in PositionModel.get_all_records()
     ]
-    return jsonify(positions), 200
+    return {"data": positions}, 200
 
 
 @position_blprnt.route("/position/<uuid:position_id>", methods=["GET"])
@@ -51,7 +52,7 @@ def get_position(position_id):
     position = PositionModel.get_by_id(position_id)
     if not position:
         return {"message": NOT_FOUND_BY_ID.format(POSITION, position_id)}, 400
-    return position_schema.dump(position), 200
+    return {"data": position_schema.dump(position)}, 200
 
 
 @position_blprnt.route("/position/<uuid:position_id>", methods=["PUT"])
@@ -72,10 +73,12 @@ def update_position(position_id):
     position = position_schema.load(
         position_json, instance=position, partial=True
     )
-    error = position.save_to_db()
-    if error:
-        return {"message": SOMETHING_WENT_WRONG.format(error)}, 400
-    return {"message": UPDATED_SUCCESSFULLY.format(POSITION, position_id)}, 200
+    position.save_to_db()
+    position_json = position_schema.dump(position)
+    return {
+        "message": UPDATED_SUCCESSFULLY.format(POSITION, position_id),
+        "data": position_json,
+    }, 200
 
 
 @position_blprnt.route("/position/<uuid:position_id>", methods=["DELETE"])

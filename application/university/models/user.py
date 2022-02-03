@@ -1,5 +1,5 @@
 from sqlalchemy import exc
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import UUID, VARCHAR
 
 from application.db import db
 from application.university.utils.base_model import BaseModel
@@ -7,7 +7,7 @@ from application.university.utils.constants import (
     MAX_EMAIL_LENGTH,
     MAX_FIRST_NAME_LENGTH,
     MAX_LAST_NAME_LENGTH,
-    MAX_PASSWORD_LENGTH,
+    SOMETHING_WENT_WRONG,
 )
 
 
@@ -17,7 +17,7 @@ class UserModel(BaseModel):
     email = db.Column(db.String(MAX_EMAIL_LENGTH), nullable=False, unique=True)
     first_name = db.Column(db.String(MAX_FIRST_NAME_LENGTH), nullable=False)
     last_name = db.Column(db.String(MAX_LAST_NAME_LENGTH), nullable=False)
-    password = db.Column(db.String(MAX_PASSWORD_LENGTH), nullable=False)
+    password = db.Column(VARCHAR(), nullable=False)
     age = db.Column(db.SmallInteger)
     student = db.relationship(
         "StudentModel", uselist=False, cascade="all,delete", backref="user"
@@ -47,12 +47,7 @@ class StudentModel(BaseModel):
         return cls.query.filter_by(is_active=True)
 
     def remove_from_db(self):
-        teacher = TeacherModel.get_by_id(self.id)
-        if teacher:
-            db.session.delete(teacher)
-        db.session.delete(self)
-        db.session.delete(self.user)
-        db.session.commit()
+        _remove_from_db(self, TeacherModel)
 
 
 class TeacherModel(BaseModel):
@@ -87,12 +82,7 @@ class TeacherModel(BaseModel):
         return cls.query.filter_by(is_active=True)
 
     def remove_from_db(self):
-        student = StudentModel.get_by_id(self.id)
-        if student:
-            db.session.delete(student)
-        db.session.delete(self)
-        db.session.delete(self.user)
-        db.session.commit()
+        _remove_from_db(self, StudentModel)
 
 
 def commit_specific_user(user, specific_user):
@@ -101,5 +91,17 @@ def commit_specific_user(user, specific_user):
         db.session.commit()
     except exc.SQLAlchemyError as err:
         db.session.rollback()
-        return str(err)
-    return False
+        raise exc.SQLAlchemyError(SOMETHING_WENT_WRONG.format(str(err)))
+
+
+def _remove_from_db(user_to_delete, opposite_model):
+    opposite_user = opposite_model.get_by_id(user_to_delete.id)
+    if opposite_user:
+        db.session.delete(opposite_user)
+    db.session.delete(user_to_delete)
+    db.session.delete(user_to_delete.user)
+    try:
+        db.session.commit()
+    except exc.SQLAlchemyError as err:
+        db.session.rollback()
+        raise exc.SQLAlchemyError(SOMETHING_WENT_WRONG.format(str(err)))

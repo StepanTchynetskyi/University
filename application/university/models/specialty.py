@@ -13,7 +13,9 @@ class SpecialtyModel(BaseModel):
     teacher_id = db.Column(
         UUID(as_uuid=True), db.ForeignKey("teacher.id", ondelete="SET NULL")
     )
-    group = db.relationship("GroupModel", uselist=False, backref="specialty")
+    groups = db.relationship(
+        "GroupModel", uselist=True, back_populates="specialty"
+    )
 
     @classmethod
     def get_by_name_and_year(cls, name, year):

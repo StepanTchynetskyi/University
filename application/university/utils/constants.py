@@ -1,3 +1,4 @@
+from collections import namedtuple
 import re
 
 MAX_EMAIL_LENGTH = 320
@@ -35,3 +36,5 @@ HAS_SYMBOLS = re.compile(r"[~`! @#$%^&*()_\-+={[}]|\:;\"\'<,>.?/]")
 VALIDATE_EMAIL = re.compile(
     r"([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})+"
 )
+
+EntityInfo = namedtuple("EntityInfo", "id model schema type")

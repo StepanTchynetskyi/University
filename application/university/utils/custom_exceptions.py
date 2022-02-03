@@ -1,6 +1,6 @@
-class CreateUserException(Exception):
+class CreateException(Exception):
     def __init__(self, message):
-        super(CreateUserException, self).__init__(message)
+        super(CreateException, self).__init__(message)
 
 
 class SearchException(Exception):

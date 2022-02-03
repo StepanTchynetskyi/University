@@ -4,6 +4,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy import exc
 
 from application.db import db
+from application.university.utils.constants import SOMETHING_WENT_WRONG
 
 
 class BaseModel(db.Model):
@@ -30,9 +31,12 @@ class BaseModel(db.Model):
             db.session.commit()
         except exc.SQLAlchemyError as err:
             db.session.rollback()
-            return str(err)
-        return False
+            raise exc.SQLAlchemyError(SOMETHING_WENT_WRONG.format(str(err)))
 
     def remove_from_db(self):
         db.session.delete(self)
-        db.session.commit()
+        try:
+            db.session.commit()
+        except exc.SQLAlchemyError as err:
+            db.session.rollback()
+            raise exc.SQLAlchemyError(SOMETHING_WENT_WRONG.format(str(err)))

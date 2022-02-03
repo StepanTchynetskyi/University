@@ -3,17 +3,21 @@ from flask import jsonify, Blueprint, request
 from application.university.schemas.group import GroupSchema
 from application.university.models.group import GroupModel
 from application.university.models.user import TeacherModel
-from application.university.utils.custom_exceptions import SearchException
-from application.university.utils.process_dates import check_year
+from application.university.utils.custom_decorators import (
+    create_obj_with_name_and_year,
+)
 from application.university.utils.constants import (
     GROUP,
-    ALREADY_EXISTS_WITH_YEAR,
-    SOMETHING_WENT_WRONG,
     CREATED_SUCCESSFULLY,
     NOT_FOUND_BY_ID,
     UPDATED_SUCCESSFULLY,
     CURATOR,
     SUCCESSFULLY_DELETED,
+    EntityInfo,
+)
+from application.university.utils.utils import (
+    is_active_user,
+    update_obj_with_name_and_year,
 )
 
 group_blprnt = Blueprint("group", __name__, url_prefix="/groups")
@@ -22,29 +26,15 @@ group_schema = GroupSchema()
 
 
 @group_blprnt.route("/group/create", methods=["POST"])
-def create_group():
-    group_json = request.get_json()
-    group = group_schema.load(group_json)
-    group_obj = GroupModel.get_by_name_and_year(
-        str(group_json["name"]), int(group_json["year"])
-    )
-    if group_obj:
-        return {
-            "message": ALREADY_EXISTS_WITH_YEAR.format(
-                GROUP, group_obj.name, group_obj.year
-            )
-        }, 400
-    curator_id = group_json.get("curator_id", None)
-    if curator_id:
-        curator = TeacherModel.get_by_id(curator_id)
-        if not curator:
-            return {
-                "message": NOT_FOUND_BY_ID.format(CURATOR, curator_id)
-            }, 400
-    error = group.save_to_db()
-    if error:
-        return {"message": SOMETHING_WENT_WRONG.format(error)}, 400
-    return {"message": CREATED_SUCCESSFULLY.format(GROUP, group.id)}, 201
+@create_obj_with_name_and_year(GroupModel, GROUP, group_schema, request)
+def create_group(group, group_json):
+    is_active_user(group_json, TeacherModel, CURATOR)
+    group.save_to_db()
+    group_json = group_schema.dump(group)
+    return {
+        "message": CREATED_SUCCESSFULLY.format(GROUP, group.id),
+        "data": group_json,
+    }, 201
 
 
 @group_blprnt.route("/", methods=["GET"])
@@ -52,7 +42,7 @@ def get_groups():
     groups = [
         group_schema.dump(group) for group in GroupModel.get_all_records()
     ]
-    return jsonify(groups), 200
+    return {"data": groups}, 200
 
 
 @group_blprnt.route("/group/<uuid:group_id>", methods=["GET"])
@@ -60,33 +50,19 @@ def get_group(group_id):
     group = GroupModel.get_by_id(group_id)
     if not group:
         return {"message": NOT_FOUND_BY_ID.format(GROUP, group_id)}, 400
-    return group_schema.dump(group), 200
+    return {"data": group_schema.dump(group)}, 200
 
 
 @group_blprnt.route("/group/<uuid:group_id>", methods=["PUT"])
 def update_group(group_id):
-    group = GroupModel.get_by_id(group_id)
-    if not group:
-        return {"message": NOT_FOUND_BY_ID.format(GROUP, group_id)}, 400
-    group_json = request.get_json()
-    curator_id = group_json.get("curator_id", None)
-    if curator_id:
-        curator = TeacherModel.get_by_id(curator_id)
-        if not curator:
-            return {
-                "message: ": NOT_FOUND_BY_ID.format(CURATOR, curator_id)
-            }, 400
-    year = group_json.get("year", None)
-    if year:
-        try:
-            check_year(GroupModel, year, group.name, GROUP)
-        except SearchException as err:
-            return {"message: ": str(err)}, err.status_code
-    group = group_schema.load(group_json, instance=group, partial=True)
-    error = group.save_to_db()
-    if error:
-        return {"message": SOMETHING_WENT_WRONG.format(error)}, 400
-    return {"message": UPDATED_SUCCESSFULLY.format(GROUP, group_id)}, 200
+    group_info = EntityInfo(group_id, GroupModel, group_schema, GROUP)
+    group_json = update_obj_with_name_and_year(
+        group_info, request, user_model=TeacherModel, user_type=CURATOR
+    )
+    return {
+        "message": UPDATED_SUCCESSFULLY.format(GROUP, group_id),
+        "data": group_json,
+    }, 200
 
 
 @group_blprnt.route("/group/<uuid:group_id>", methods=["DELETE"])

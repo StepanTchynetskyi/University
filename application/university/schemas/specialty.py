@@ -6,7 +6,7 @@ from application.university.models.specialty import SpecialtyModel
 class SpecialtySchema(ma.SQLAlchemyAutoSchema):
     teacher = ma.Nested("TeacherSchema", many=False, exclude=("specialty",))
 
-    groups = ma.Nested("GroupSchema", many=True)
+    groups = ma.Nested("GroupSchema", many=True, exclude=("specialty",))
     subjects = ma.Nested("SubjectSchema", many=True)
 
     class Meta:

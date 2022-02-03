@@ -1,4 +1,3 @@
-import datetime
 from sqlalchemy.dialects.postgresql import UUID
 
 from application.db import db
@@ -40,6 +39,9 @@ class GroupModel(BaseModel):
         secondary=group_student,
         lazy="subquery",
         backref=db.backref("groups", lazy=True),
+    )
+    specialty = db.relationship(
+        "SpecialtyModel", uselist=False, back_populates="groups"
     )
 
     @classmethod

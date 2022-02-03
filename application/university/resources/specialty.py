@@ -5,59 +5,37 @@ from application.university.models.specialty import SpecialtyModel
 from application.university.models.user import TeacherModel
 from application.university.utils.constants import (
     CREATED_SUCCESSFULLY,
-    DOES_NOT_EXIST,
-    NOT_ACTIVE_USER,
     SPECIALTY,
     TEACHER,
     NOT_FOUND_BY_ID,
-    SOMETHING_WENT_WRONG,
     UPDATED_SUCCESSFULLY,
     SUCCESSFULLY_DELETED,
-    ALREADY_EXISTS_WITH_YEAR,
+    EntityInfo,
 )
-from application.university.utils.custom_exceptions import SearchException
-from application.university.utils.process_dates import check_year
+from application.university.utils.custom_decorators import (
+    create_obj_with_name_and_year,
+)
+from application.university.utils.utils import (
+    is_active_user,
+    update_obj_with_name_and_year,
+)
 
 specialty_blprnt = Blueprint("specialty", __name__, url_prefix="/specialties")
 
 specialty_schema = SpecialtySchema()
 
 
-def process_specialty_json(specialty_json):
-    teacher_id = specialty_json.get("teacher_id", None)
-    if teacher_id:
-        teacher = TeacherModel.get_by_id(teacher_id)
-        if not teacher:
-            raise SearchException(
-                DOES_NOT_EXIST.format(TEACHER, teacher_id), 400
-            )
-        if not teacher.is_active:
-            raise SearchException(NOT_ACTIVE_USER.format(TEACHER, teacher_id))
-    return specialty_json
-
-
 @specialty_blprnt.route("/specialty/create", methods=["POST"])
-def create_specialty():
-    specialty_json = request.get_json()
-    specialty = specialty_schema.load(specialty_json)
-    specialty_obj = SpecialtyModel.get_by_name_and_year(
-        str(specialty_json["name"]), int(specialty_json["year"])
-    )
-    if specialty_obj:
-        return {
-            "message": ALREADY_EXISTS_WITH_YEAR.format(
-                SPECIALTY, specialty_obj.name, specialty_obj.year
-            )
-        }, 400
-    try:
-        process_specialty_json(specialty_json)
-    except SearchException as err:
-        return {"message: ": str(err)}, err.status_code
-    error = specialty.save_to_db()
-    if error:
-        return {"message": SOMETHING_WENT_WRONG.format(error)}, 400
+@create_obj_with_name_and_year(
+    SpecialtyModel, SPECIALTY, specialty_schema, request
+)
+def create_specialty(specialty, specialty_json):
+    is_active_user(specialty_json, TeacherModel, TEACHER)
+    specialty.save_to_db()
+    specialty_json = specialty_schema.dump(specialty)
     return {
-        "message": CREATED_SUCCESSFULLY.format(SPECIALTY, specialty.id)
+        "message": CREATED_SUCCESSFULLY.format(SPECIALTY, specialty.id),
+        "data": specialty_json,
     }, 201
 
 
@@ -67,8 +45,7 @@ def get_specialties():
         specialty_schema.dump(specialty)
         for specialty in SpecialtyModel.get_all_records()
     ]
-    print(SpecialtyModel.get_all_records())
-    return jsonify(specialties), 200
+    return {"data": specialties}, 200
 
 
 @specialty_blprnt.route("/specialty/<uuid:specialty_id>", methods=["GET"])
@@ -78,35 +55,20 @@ def get_specialty(specialty_id):
         return {
             "message": NOT_FOUND_BY_ID.format(SPECIALTY, specialty_id)
         }, 400
-    return specialty_schema.dump(specialty), 200
+    return {"data": specialty_schema.dump(specialty)}, 200
 
 
 @specialty_blprnt.route("/specialty/<uuid:specialty_id>", methods=["PUT"])
 def update_specialty(specialty_id):
-    specialty = SpecialtyModel.get_by_id(specialty_id)
-    if not specialty:
-        return {
-            "message": NOT_FOUND_BY_ID.format(SPECIALTY, specialty_id)
-        }, 400
-    specialty_json = request.get_json()
-    try:
-        process_specialty_json(specialty_json)
-    except SearchException as err:
-        return {"message: ": str(err)}, err.status_code
-    year = specialty_json.get("year", None)
-    if year:
-        try:
-            check_year(SpecialtyModel, year, specialty.name, SPECIALTY)
-        except SearchException as err:
-            return {"message: ": str(err)}, err.status_code
-    specialty = specialty_schema.load(
-        specialty_json, instance=specialty, partial=True
+    specialty_info = EntityInfo(
+        specialty_id, SpecialtyModel, specialty_schema, SPECIALTY
     )
-    error = specialty.save_to_db()
-    if error:
-        return {"message": SOMETHING_WENT_WRONG.format(error)}, 400
+    specialty_json = update_obj_with_name_and_year(
+        specialty_info, request, user_model=TeacherModel, user_type=TEACHER
+    )
     return {
-        "message": UPDATED_SUCCESSFULLY.format(SPECIALTY, specialty_id)
+        "message": UPDATED_SUCCESSFULLY.format(SPECIALTY, specialty_id),
+        "data": specialty_json,
     }, 200
 
 

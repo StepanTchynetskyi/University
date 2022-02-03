@@ -3,16 +3,17 @@ from flask import jsonify, Blueprint, request
 from application.university.schemas.subject import SubjectSchema
 from application.university.models.subject import SubjectModel
 from application.university.utils.constants import (
-    SOMETHING_WENT_WRONG,
     CREATED_SUCCESSFULLY,
     SUBJECT,
     NOT_FOUND_BY_ID,
     UPDATED_SUCCESSFULLY,
     SUCCESSFULLY_DELETED,
-    ALREADY_EXISTS_WITH_YEAR,
+    EntityInfo,
 )
-from application.university.utils.custom_exceptions import SearchException
-from application.university.utils.process_dates import check_year
+from application.university.utils.custom_decorators import (
+    create_obj_with_name_and_year,
+)
+from application.university.utils.utils import update_obj_with_name_and_year
 
 subject_blprnt = Blueprint("subject", __name__, url_prefix="/subjects")
 
@@ -20,22 +21,13 @@ subject_schema = SubjectSchema()
 
 
 @subject_blprnt.route("/subject/create", methods=["POST"])
-def create_subject():
-    subject_json = request.get_json()
-    subject = subject_schema.load(subject_json)
-    subject_obj = SubjectModel.get_by_name_and_year(
-        subject_json["name"], subject_json["year"]
-    )
-    if subject_obj:
-        return {
-            "message": ALREADY_EXISTS_WITH_YEAR.format(
-                SUBJECT, subject_obj.name, subject_obj.year
-            )
-        }, 400
-    error = subject.save_to_db()
-    if error:
-        return {"message": SOMETHING_WENT_WRONG.format(error)}, 400
-    return {"message": CREATED_SUCCESSFULLY.format(SUBJECT, subject.id)}, 201
+@create_obj_with_name_and_year(SubjectModel, SUBJECT, subject_schema, request)
+def create_subject(subject, subject_json):
+    subject.save_to_db()
+    return {
+        "message": CREATED_SUCCESSFULLY.format(SUBJECT, subject.id),
+        "data": subject_json,
+    }, 201
 
 
 @subject_blprnt.route("/", methods=["GET"])
@@ -44,7 +36,7 @@ def get_subjects():
         subject_schema.dump(subject)
         for subject in SubjectModel.get_all_records()
     ]
-    return jsonify(subjects), 200
+    return {"data": subjects}, 200
 
 
 @subject_blprnt.route("/subject/<uuid:subject_id>", methods=["GET"])
@@ -52,26 +44,19 @@ def get_subject(subject_id):
     subject = SubjectModel.get_by_id(subject_id)
     if not subject:
         return {"message": NOT_FOUND_BY_ID.format(SUBJECT, subject_id)}, 400
-    return subject_schema.dump(subject), 200
+    return {"data": subject_schema.dump(subject)}, 200
 
 
 @subject_blprnt.route("/subject/<uuid:subject_id>", methods=["PUT"])
 def update_subject(subject_id):
-    subject = SubjectModel.get_by_id(subject_id)
-    if not subject:
-        return {"message": NOT_FOUND_BY_ID.format(SUBJECT, subject_id)}, 400
-    subject_json = request.get_json()
-    year = subject_json.get("year", None)
-    if year:
-        try:
-            check_year(SubjectModel, year, subject.name, SUBJECT)
-        except SearchException as err:
-            return {"message: ": str(err)}, err.status_code
-    subject = subject_schema.load(subject_json, instance=subject, partial=True)
-    error = subject.save_to_db()
-    if error:
-        return {"message": SOMETHING_WENT_WRONG.format(error)}, 400
-    return {"message": UPDATED_SUCCESSFULLY.format(SUBJECT, subject_id)}, 200
+    subject_info = EntityInfo(
+        subject_id, SubjectModel, subject_schema, SUBJECT
+    )
+    subject_json = update_obj_with_name_and_year(subject_info, request)
+    return {
+        "message": UPDATED_SUCCESSFULLY.format(SUBJECT, subject_id),
+        "data": subject_json,
+    }, 200
 
 
 # TODO: check if many-to-many relation disappear
