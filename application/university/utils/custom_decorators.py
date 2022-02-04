@@ -57,7 +57,7 @@ def process_user_json(specific_model, user_type, user_schema, request):
             else:
                 user.password = get_hashed_password(
                     user.password.encode("utf8")
-                )
+                ).decode("utf-8")
                 user.id = uuid.uuid4()
             return func(user_json, user)
 

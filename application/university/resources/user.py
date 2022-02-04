@@ -1,15 +1,24 @@
 from flask import Blueprint, request
+from flask_jwt_extended import (
+    create_access_token,
+    create_refresh_token,
+    get_jwt,
+    jwt_required,
+)
 
+from application.blacklist import BLACKLIST
 from application.university.schemas.user import (
     UserSchema,
     StudentSchema,
     TeacherSchema,
+    LoginSchema,
 )
 from application.university.models.position import PositionModel
 from application.university.models.user import (
     commit_specific_user,
     StudentModel,
     TeacherModel,
+    UserModel,
 )
 from application.university.utils.custom_decorators import (
     find_active_user,
@@ -24,13 +33,18 @@ from application.university.utils.constants import (
     TEACHER,
     POSITION,
 )
-from application.university.utils.utils import update_specific_user
+from application.university.utils.utils import (
+    update_specific_user,
+    check_password,
+)
 
 user_blprnt = Blueprint("users", __name__, url_prefix="/users")
+auth_blprnt = Blueprint("auth", __name__, url_prefix="/auth")
 
 user_schema = UserSchema()
 student_schema = StudentSchema()
 teacher_schema = TeacherSchema()
+login_schema = LoginSchema()
 
 
 @user_blprnt.route("/students/student/create", methods=["POST"])
@@ -47,6 +61,7 @@ def create_student(student_json, user):
 
 
 @user_blprnt.route("/students", methods=["GET"])
+@jwt_required()
 def get_students():
     students = [
         student_schema.dump(student)
@@ -140,6 +155,31 @@ def update_teacher(teacher):
         "message": UPDATED_SUCCESSFULLY.format(STUDENT, teacher.id),
         "data": teacher_json,
     }, 200
+
+
+@auth_blprnt.route("/login", methods=["POST"])
+def login_user():
+    user_json = request.get_json()
+    loaded_user = login_schema.load(user_json)
+    user = UserModel.get_by_email(loaded_user["email"])
+    if user and check_password(loaded_user["password"], user.password):
+        access_token = create_access_token(identity=user.id, fresh=True)
+        refresh_token = create_refresh_token(user.id)
+        return {
+            "data": {
+                "access_token": access_token,
+                "refresh_token": refresh_token,
+                "user": login_schema.dump(loaded_user),
+            }
+        }, 200
+
+
+@auth_blprnt.route("/logout", methods=["POST"])
+@jwt_required()
+def logout_user():
+    jti = get_jwt()["jti"]
+    BLACKLIST.add(jti)
+    return {"message": "Successfully logged out"}, 200
 
 
 # TODO: should be deleted or allowed just for admin or user with the specified id

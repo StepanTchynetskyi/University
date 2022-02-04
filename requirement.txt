@@ -12,6 +12,7 @@ executing==0.8.2
 filelock==3.4.2
 flake8==4.0.1
 Flask==2.0.2
+Flask-JWT-Extended==4.3.1
 flask-marshmallow==0.14.0
 Flask-Migrate==3.1.0
 Flask-SQLAlchemy==2.5.1
@@ -46,6 +47,7 @@ pycodestyle==2.8.0
 pycparser==2.21
 pyflakes==2.4.0
 Pygments==2.11.2
+PyJWT==2.3.0
 PyYAML==6.0
 six==1.16.0
 SQLAlchemy==1.4.31

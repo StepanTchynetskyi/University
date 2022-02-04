@@ -1,5 +1,4 @@
-from marshmallow import EXCLUDE, validates, ValidationError
-
+from marshmallow import EXCLUDE, validates, ValidationError, Schema, fields
 from application.ma import ma
 from application.university.models.user import (
     UserModel,
@@ -97,3 +96,19 @@ class TeacherSchema(ma.SQLAlchemyAutoSchema):
         unknown = EXCLUDE
         include_fk = True
         dump_only = ("id", "is_active", "created_on", "updated_on")
+
+
+class LoginSchema(Schema):
+
+    email = fields.String()
+    password = fields.String()
+
+    @validates("email")
+    def validate_email(self, value):
+        if not VALIDATE_EMAIL.fullmatch(value):
+            raise ValidationError("Invalid Email Address")
+
+    @validates("password")
+    def validate_password(self, value):
+        if len(value) < 8:
+            raise ValidationError("Too short password(min 8 symbols)")
