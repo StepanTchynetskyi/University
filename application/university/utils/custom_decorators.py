@@ -39,7 +39,7 @@ def find_active_user(specific_model, user_type):
     return decorator
 
 
-def process_user_json(specific_model, user_type, user_schema, request):
+def process_user_json(user_schema, user_type, request):
     def decorator(func):
         @wraps(func)
         def wrapper():
@@ -47,19 +47,17 @@ def process_user_json(specific_model, user_type, user_schema, request):
             user = user_schema.load(user_json)
             user_obj = UserModel.get_by_email(user_json.get("email", None))
             if user_obj:
-                specific_user = specific_model.get_by_id(user_obj.id)
-                if specific_user:
-                    raise CreateException(
-                        ALREADY_EXISTS.format(user_type, user_obj.email)
-                    )
+                raise CreateException(
+                    ALREADY_EXISTS.format(user_type, user_obj.email)
+                )
             if user_json["password"] != user_json.get("password1", None):
                 raise CreateException(PW_DO_NOT_MATCH)
             else:
                 user.password = get_hashed_password(
                     user.password.encode("utf8")
                 ).decode("utf-8")
-                user.id = uuid.uuid4()
-            return func(user_json, user)
+                user.save_to_db()
+            return func(user)
 
         return wrapper
 

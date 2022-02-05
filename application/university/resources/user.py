@@ -15,7 +15,6 @@ from application.university.schemas.user import (
 )
 from application.university.models.position import PositionModel
 from application.university.models.user import (
-    commit_specific_user,
     StudentModel,
     TeacherModel,
     UserModel,
@@ -48,11 +47,8 @@ login_schema = LoginSchema()
 
 
 @user_blprnt.route("/students/student/create", methods=["POST"])
-@process_user_json(StudentModel, STUDENT, user_schema, request)
-def create_student(student_json, user):
-    student = student_schema.load(student_json)
-    student.id = user.id
-    commit_specific_user(user, student)
+@process_user_json(student_schema, STUDENT, request)
+def create_student(student):
     student_json = student_schema.dump(student)
     return {
         "message": CREATED_SUCCESSFULLY.format(STUDENT, student.id),
@@ -79,9 +75,7 @@ def get_student(student):
 @user_blprnt.route("/students/student/<uuid:student_id>", methods=["PUT"])
 @find_active_user(StudentModel, STUDENT)
 def update_student(student):
-    student_json = update_specific_user(
-        student, user_schema, student_schema, request
-    )
+    student_json = update_specific_user(student, student_schema, request)
     return {
         "message": UPDATED_SUCCESSFULLY.format(STUDENT, student.id),
         "data": student_json,
@@ -107,15 +101,8 @@ def soft_delete_student(student):
 
 
 @user_blprnt.route("/teachers/teacher/create", methods=["POST"])
-@process_user_json(TeacherModel, TEACHER, user_schema, request)
-def create_teacher(teacher_json, user):
-    teacher = teacher_schema.load(teacher_json)
-    position_id = teacher_json.get("position_id", None)
-    position = PositionModel.get_by_id(position_id)
-    if not position:
-        return {"message": DOES_NOT_EXIST.format(POSITION, position_id)}, 400
-    teacher.id = user.id
-    commit_specific_user(user, teacher)
+@process_user_json(teacher_schema, TEACHER, request)
+def create_teacher(teacher):
     teacher_json = teacher_schema.dump(teacher)
     return {
         "message": CREATED_SUCCESSFULLY.format(TEACHER, teacher.id),
@@ -148,13 +135,29 @@ def update_teacher(teacher):
             return {
                 "message": DOES_NOT_EXIST.format(POSITION, position.id)
             }, 400
-    teacher_json = update_specific_user(
-        teacher, user_schema, teacher_schema, request
-    )
+    teacher_json = update_specific_user(teacher, teacher_schema, request)
     return {
         "message": UPDATED_SUCCESSFULLY.format(STUDENT, teacher.id),
         "data": teacher_json,
     }, 200
+
+
+# TODO: should be deleted or allowed just for admin or user with the specified id
+@user_blprnt.route(
+    "/teachers/teacher/hard_delete/<uuid:teacher_id>", methods=["DELETE"]
+)
+@find_active_user(TeacherModel, TEACHER)
+def hard_delete_teacher(teacher):
+    teacher.remove_from_db()
+    return {"message": SUCCESSFULLY_DELETED.format(TEACHER, teacher.id)}, 200
+
+
+@user_blprnt.route("/teachers/teacher/<uuid:teacher_id>", methods=["DELETE"])
+@find_active_user(TeacherModel, TEACHER)
+def soft_delete_teacher(teacher):
+    teacher.is_active = False
+    teacher.save_to_db()
+    return {"message": SUCCESSFULLY_DELETED.format(STUDENT, teacher.id)}, 200
 
 
 @auth_blprnt.route("/login", methods=["POST"])
@@ -180,24 +183,6 @@ def logout_user():
     jti = get_jwt()["jti"]
     BLACKLIST.add(jti)
     return {"message": "Successfully logged out"}, 200
-
-
-# TODO: should be deleted or allowed just for admin or user with the specified id
-@user_blprnt.route(
-    "/teachers/teacher/hard_delete/<uuid:teacher_id>", methods=["DELETE"]
-)
-@find_active_user(TeacherModel, TEACHER)
-def hard_delete_teacher(teacher):
-    teacher.remove_from_db()
-    return {"message": SUCCESSFULLY_DELETED.format(TEACHER, teacher.id)}, 200
-
-
-@user_blprnt.route("/teachers/teacher/<uuid:teacher_id>", methods=["DELETE"])
-@find_active_user(TeacherModel, TEACHER)
-def soft_delete_teacher(teacher):
-    teacher.is_active = False
-    teacher.save_to_db()
-    return {"message": SUCCESSFULLY_DELETED.format(STUDENT, teacher.id)}, 200
 
 
 @user_blprnt.route(

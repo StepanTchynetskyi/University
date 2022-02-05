@@ -1,6 +1,5 @@
 import bcrypt
 
-from application.university.models.user import commit_specific_user
 from application.university.utils.constants import (
     DOES_NOT_EXIST,
     NOT_ACTIVE_USER,
@@ -12,24 +11,13 @@ from application.university.utils.process_dates import (
 )
 
 
-def update_specific_user(specific_user, user_schema, specific_schema, request):
+def update_specific_user(specific_user, specific_schema, request):
     specific_user_json = request.get_json()
-    user_json = specific_user_json.pop("user", None)
-
-    if user_json:
-        user = user_schema.load(
-            user_json, instance=specific_user.user, partial=True
-        )
-        student = specific_schema.load(
-            specific_user_json, instance=specific_user, partial=True
-        )
-        commit_specific_user(user, student)
-    else:
-        student = specific_schema.load(
-            specific_user_json, instance=specific_user, partial=True
-        )
-        student.save_to_db()
-    return specific_schema.dump(student)
+    specific_user = specific_schema.load(
+        specific_user_json, instance=specific_user, partial=True
+    )
+    specific_user.save_to_db()
+    return specific_schema.dump(specific_user)
 
 
 def is_active_user(json_, user_model, user_type):

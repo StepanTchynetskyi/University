@@ -14,14 +14,7 @@ from application.university.utils.constants import (
 )
 
 
-class UserSchema(ma.SQLAlchemyAutoSchema):
-    class Meta:
-        model = UserModel
-        load_instance = True
-        unknown = EXCLUDE
-        load_only = ("password",)
-        dump_only = ("id", "created_on", "updated_on")
-
+class UserValidation:
     @validates("first_name")
     def validate_first_name(self, value):
         if len(value) < 2:
@@ -64,8 +57,16 @@ class UserSchema(ma.SQLAlchemyAutoSchema):
             raise ValidationError("Too Big Number Provided For Age")
 
 
-class StudentSchema(ma.SQLAlchemyAutoSchema):
-    user = ma.Nested("UserSchema", many=False)
+class UserSchema(ma.SQLAlchemyAutoSchema, UserValidation):
+    class Meta:
+        model = UserModel
+        load_instance = True
+        unknown = EXCLUDE
+        load_only = ("password",)
+        dump_only = ("id", "created_on", "updated_on")
+
+
+class StudentSchema(ma.SQLAlchemyAutoSchema, UserValidation):
     groups = ma.Nested("GroupSchema", many=True)
 
     class Meta:
@@ -73,6 +74,7 @@ class StudentSchema(ma.SQLAlchemyAutoSchema):
         load_instance = True
         unknown = EXCLUDE
         include_fk = True
+        load_only = ("password",)
         dump_only = ("id", "is_active", "created_on", "updated_on")
 
     @validates("year_of_study")
@@ -81,8 +83,7 @@ class StudentSchema(ma.SQLAlchemyAutoSchema):
             raise ValidationError("Year of Study should be between 1 and 8")
 
 
-class TeacherSchema(ma.SQLAlchemyAutoSchema):
-    user = ma.Nested("UserSchema", many=False)
+class TeacherSchema(ma.SQLAlchemyAutoSchema, UserValidation):
     position = ma.Nested("PositionSchema", many=False, exclude=("teachers",))
     specialty = ma.Nested(
         "SpecialtySchema", many=False, exclude=("teacher", "teacher_id")
@@ -95,6 +96,7 @@ class TeacherSchema(ma.SQLAlchemyAutoSchema):
         load_instance = True
         unknown = EXCLUDE
         include_fk = True
+        load_only = ("password",)
         dump_only = ("id", "is_active", "created_on", "updated_on")
 
 
