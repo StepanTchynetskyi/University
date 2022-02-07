@@ -5,5 +5,5 @@ exclude =
     venv,
     */tests.py,
     migrations/*
-max-line-length = 100
+max-line-length = 110
 max-complexity = 10

@@ -1,3 +1,6 @@
+from typing import Tuple, Dict, Any
+from uuid import UUID
+
 from flask import Blueprint, request
 from flask_jwt_extended import (
     create_access_token,
@@ -7,9 +10,10 @@ from flask_jwt_extended import (
     get_jwt_identity,
 )
 
-from application import SubjectModel, GroupModel
+from application import SubjectModel, GroupModel, SpecialtyModel
 from application.blacklist import BLACKLIST
 from application.university.schemas.group import GroupSchema
+from application.university.schemas.specialty import SpecialtySchema
 from application.university.schemas.user import (
     UserSchema,
     StudentSchema,
@@ -34,21 +38,19 @@ from application.university.utils.constants import (
     STUDENT,
     TEACHER,
     POSITION,
-    PERMISSION_DENIED,
     APPOINT_ITEM,
-    ITEM_NOT_PROVIDED,
     SUBJECT,
-    NOT_FOUND_BY_ID,
     GROUP,
+    SPECIALTY,
 )
 from application.university.utils.utils import (
     update_specific_user,
     check_password,
     process_many_to_many_insert,
+    process_entity_with_teacher,
 )
 from application.university.utils.custom_exceptions import (
     SearchException,
-    NotProvided,
 )
 
 user_blprnt = Blueprint("users", __name__, url_prefix="/users")
@@ -59,11 +61,20 @@ student_schema = StudentSchema()
 teacher_schema = TeacherSchema()
 login_schema = LoginSchema()
 group_schema = GroupSchema()
+specialty_schema = SpecialtySchema()
 
 
 @user_blprnt.route("/students/student/create", methods=["POST"])
 @process_user_json(student_schema, STUDENT, request)
-def create_student(student):
+def create_student(student: StudentModel) -> Tuple[Dict[str, Any], int]:
+    """Creates Student account
+
+    :param student: an object of existing student,
+     received from @find_active_user by a UUID from url
+    :type student: StudentModel
+    :return: Tuple with a dictionary that contains 'message',
+     "data" of the teacher and status code for the Response
+    """
     student_json = student_schema.dump(student)
     return {
         "message": CREATED_SUCCESSFULLY.format(STUDENT, student.id),
@@ -73,6 +84,11 @@ def create_student(student):
 
 @user_blprnt.route("/students", methods=["GET"])
 def get_students():
+    """Shows active students and their data
+
+    :return: Tuple with a dictionary that contains "data" of the teachers
+     and status code for the Response
+    """
     students = [
         student_schema.dump(student)
         for student in StudentModel.get_all_records()
@@ -82,14 +98,30 @@ def get_students():
 
 @user_blprnt.route("/students/student/<uuid:student_id>", methods=["GET"])
 @find_active_user(StudentModel, STUDENT)
-def get_student(student):
+def get_student(student: StudentModel) -> Tuple[Dict[str, Any], int]:
+    """Shows specific student data
+
+    :param student: an object of existing student,
+     received from @find_active_user by a UUID from url
+    :type student: StudentModel
+    :return: Tuple with a dictionary that contains "data" of the teacher
+     and status code for the Response
+    """
     return {"data": student_schema.dump(student)}, 200
 
 
 @user_blprnt.route("/students/student/<uuid:student_id>", methods=["PUT"])
 @jwt_required()
-@find_active_user(StudentModel, STUDENT)
-def update_student(student):
+@find_active_user(StudentModel, STUDENT, check_jwt=True)
+def update_student(student: StudentModel) -> Tuple[Dict[str, Any], int]:
+    """Opportunity for the Student to update account
+
+    :param student: an object of existing student,
+     received from @find_active_user by a UUID from url
+    :type student: StudentModel
+    :return: Tuple with a dictionary that contains 'message',
+     "data" of the teacher and status code for the Response
+    """
     student_json = update_specific_user(student, student_schema, request)
     return {
         "message": UPDATED_SUCCESSFULLY.format(STUDENT, student.id),
@@ -101,15 +133,29 @@ def update_student(student):
 @user_blprnt.route(
     "/students/student/hard_delete/<uuid:student_id>", methods=["DELETE"]
 )
-@find_active_user(StudentModel, STUDENT)
-def hard_delete_student(student):
+@find_active_user(StudentModel, STUDENT, check_jwt=True)
+def hard_delete_student(student: StudentModel) -> Tuple[Dict[str, Any], int]:
+    """Opportunity for the Student to delete account
+
+    :param student: an object of existing student,
+     received from @find_active_user by a UUID from url
+    :type student: StudentModel
+    :return: Tuple with a dictionary that contains "message" and status code
+    """
     student.remove_from_db()
     return {"message": SUCCESSFULLY_DELETED.format(STUDENT, student.id)}, 200
 
 
 @user_blprnt.route("/students/student/<uuid:student_id>", methods=["DELETE"])
-@find_active_user(StudentModel, STUDENT)
-def soft_delete_student(student):
+@find_active_user(StudentModel, STUDENT, check_jwt=True)
+def soft_delete_student(student: StudentModel) -> Tuple[Dict[str, Any], int]:
+    """Opportunity for the Student to softly delete account
+
+    :param student: an object of existing student,
+     received from @find_active_user by a UUID from url
+    :type student: StudentModel
+    :return: Tuple with a dictionary that contains "message" and status code
+    """
     student.is_active = False
     student.save_to_db()
     return {"message": SUCCESSFULLY_DELETED.format(STUDENT, student.id)}, 200
@@ -117,7 +163,15 @@ def soft_delete_student(student):
 
 @user_blprnt.route("/teachers/teacher/create", methods=["POST"])
 @process_user_json(teacher_schema, TEACHER, request)
-def create_teacher(teacher):
+def create_teacher(teacher: TeacherModel) -> Tuple[Dict[str, Any], int]:
+    """Creates Teacher account
+
+    :param teacher: an object of existing teacher,
+     received from @find_active_user by a UUID from url
+    :type teacher: TeacherModel
+    :return: Tuple with a dictionary that contains 'message',
+     "data" of the teacher and status code for the Response
+    """
     teacher_json = teacher_schema.dump(teacher)
     return {
         "message": CREATED_SUCCESSFULLY.format(TEACHER, teacher.id),
@@ -126,7 +180,12 @@ def create_teacher(teacher):
 
 
 @user_blprnt.route("/teachers", methods=["GET"])
-def get_teachers():
+def get_teachers() -> Tuple[Dict[str, Any], int]:
+    """Shows active teachers and their data
+
+    :return: Tuple with a dictionary that contains "data" of the teachers
+     and status code for the Response
+    """
     teachers = [
         teacher_schema.dump(teacher)
         for teacher in TeacherModel.get_all_records()
@@ -136,14 +195,30 @@ def get_teachers():
 
 @user_blprnt.route("/teachers/teacher/<uuid:teacher_id>", methods=["GET"])
 @find_active_user(TeacherModel, TEACHER)
-def get_teacher(teacher):
+def get_teacher(teacher: TeacherModel) -> Tuple[Dict[str, Any], int]:
+    """Shows specific teacher data
+
+    :param teacher: an object of existing teacher,
+     received from @find_active_user by a UUID from url
+    :type teacher: TeacherModel
+    :return: Tuple with a dictionary that contains "data" of the teacher
+     and status code for the Response
+    """
     return {"data": teacher_schema.dump(teacher)}, 200
 
 
 @user_blprnt.route("/teachers/teacher/<uuid:teacher_id>", methods=["PUT"])
 @jwt_required()
-@find_active_user(TeacherModel, TEACHER)
-def update_teacher(teacher):
+@find_active_user(TeacherModel, TEACHER, check_jwt=True)
+def update_teacher(teacher: TeacherModel) -> Tuple[Dict[str, Any], int]:
+    """Opportunity for the Teacher to update account
+
+    :param teacher: an object of existing teacher,
+     received from @find_active_user by a UUID from url
+    :type teacher: TeacherModel
+    :return: Tuple with a dictionary that contains 'message',
+     "data" of the teacher and status code for the Response
+    """
     position_id = request.get_json().get("position_id", None)
     if position_id:
         position = PositionModel.get_by_id(position_id)
@@ -162,22 +237,43 @@ def update_teacher(teacher):
 @user_blprnt.route(
     "/teachers/teacher/hard_delete/<uuid:teacher_id>", methods=["DELETE"]
 )
-@find_active_user(TeacherModel, TEACHER)
-def hard_delete_teacher(teacher):
+@jwt_required()
+@find_active_user(TeacherModel, TEACHER, check_jwt=True)
+def hard_delete_teacher(teacher: TeacherModel) -> Tuple[Dict[str, Any], int]:
+    """Opportunity for the Teacher to delete account
+
+    :param teacher: an object of existing teacher,
+     received from @find_active_user by a UUID from url
+    :type teacher: TeacherModel
+    :return: Tuple with a dictionary that contains "message" and status code
+    """
     teacher.remove_from_db()
     return {"message": SUCCESSFULLY_DELETED.format(TEACHER, teacher.id)}, 200
 
 
 @user_blprnt.route("/teachers/teacher/<uuid:teacher_id>", methods=["DELETE"])
-@find_active_user(TeacherModel, TEACHER)
-def soft_delete_teacher(teacher):
+@jwt_required()
+@find_active_user(TeacherModel, TEACHER, check_jwt=True)
+def soft_delete_teacher(teacher: TeacherModel) -> Tuple[Dict[str, Any], int]:
+    """Opportunity for the Teacher to softly delete account
+
+    :param teacher: an object of existing teacher,
+     received from @find_active_user by a UUID from url
+    :type teacher: TeacherModel
+    :return: Tuple with a dictionary that contains "message" and status code
+    """
     teacher.is_active = False
     teacher.save_to_db()
     return {"message": SUCCESSFULLY_DELETED.format(STUDENT, teacher.id)}, 200
 
 
 @auth_blprnt.route("/login", methods=["POST"])
-def login_user():
+def login_user() -> Tuple[Dict[str, Any], int]:
+    """Log in user to the system with email and password
+
+    :return: Tuple with a dictionary that contains "data" with
+     'access_token', 'refresh_token', 'user_email' and status code
+    """
     user_json = request.get_json()
     loaded_user = login_schema.load(user_json)
     user = UserModel.get_by_email(loaded_user["email"])
@@ -195,7 +291,11 @@ def login_user():
 
 @auth_blprnt.route("/logout", methods=["POST"])
 @jwt_required()
-def logout_user():
+def logout_user() -> Tuple[Dict[str, Any], int]:
+    """Logout user from the system, adding access_token to the BLACKLIST
+
+    :return: Tuple with a dictionary that contains "status message" and status code
+    """
     jti = get_jwt()["jti"]
     BLACKLIST.add(jti)
     return {"message": "Successfully logged out"}, 200
@@ -203,19 +303,36 @@ def logout_user():
 
 @auth_blprnt.route("/refresh", methods=["POST"])
 @jwt_required(refresh=True)
-def refresh():
+def refresh() -> Tuple[Dict[str, Any], int]:
+    """Refreshes expired access_token for User
+
+    :return: Tuple with a dictionary that contains "data" with
+     the access token for the User
+    """
     identity = get_jwt_identity()
     access_token = create_access_token(identity=identity, fresh=False)
-    return {"data": {"access_token": access_token}}
+    return {"data": {"access_token": access_token}}, 200
 
 
 @user_blprnt.route(
-    "/teachers/teacher/<uuid:teacher_id>/appoint-subjects/appoint-subject/<uuid:subject_id>",
+    "/teachers/teacher/<uuid:teacher_id>/appoint-subjects/appoint-subject/subject/<uuid:subject_id>",
     methods=["POST"],
 )
 @jwt_required()
 @find_active_user(TeacherModel, TEACHER, check_jwt=True)
-def appoint_subject_to_teacher(teacher, subject_id):
+def appoint_subject_to_teacher(
+    teacher: TeacherModel, subject_id: UUID
+) -> Tuple[Dict[str, Any], int]:
+    """Opportunity for the Teacher to appoint specific subjects
+
+    :param teacher: an object of existing teacher,
+     received from @find_active_user by a UUID from url
+    :type teacher: TeacherModel
+    :param subject_id: UUID of Subject from url
+    :type subject_id: UUID
+    :return: Tuple with a dictionary that contains 'message',
+     "data" of the appointed items and status code for the Response
+    """
     subject = SubjectModel.get_by_id(subject_id)
     if not subject:
         raise SearchException("Subject not found", status_code=400)
@@ -229,15 +346,26 @@ def appoint_subject_to_teacher(teacher, subject_id):
 
 
 @user_blprnt.route(
-    "/teachers/teacher/<uuid:teacher_id>/appoint-subjects",
+    "/teachers/teacher/<uuid:teacher_id>/appoint-subjects-to_teacher",
     methods=["POST"],
 )
 @jwt_required()
 @find_active_user(TeacherModel, TEACHER, check_jwt=True)
-def appoint_subjects_to_teacher(teacher):
+def appoint_subjects_to_teacher(
+    teacher: TeacherModel,
+) -> Tuple[Dict[str, Any], int]:
+    """Opportunity for the Teacher to appoint subjects
+
+    :param teacher: an object of existing teacher,
+     received from @find_active_user by a UUID from url
+    :type teacher: TeacherModel
+    :return: Tuple with a dictionary that contains 'message',
+     "data" of the appointed items and status code for the Response
+    """
     data = request.get_json()
-    teacher_json, subject_ids = process_many_to_many_insert(
-        teacher, teacher_schema, SUBJECT, data, SubjectModel
+    subject_ids = data.get("subject_ids")
+    teacher_json = process_many_to_many_insert(
+        teacher, teacher_schema, SUBJECT, subject_ids, SubjectModel
     )
     return {
         "message": APPOINT_ITEM.format(subject_ids, teacher.first_name),
@@ -246,27 +374,64 @@ def appoint_subjects_to_teacher(teacher):
 
 
 @user_blprnt.route(
-    "/teachers/teacher/<uuid:teacher_id>/appoint-student-to-group",
+    "/teachers/teacher/<uuid:teacher_id>/appoint-student-to-group/group/<uuid:group_id>",
     methods=["POST"],
 )
 @jwt_required()
 @find_active_user(TeacherModel, TEACHER, check_jwt=True)
-def appoint_student_to_group(teacher):
+def appoint_student_to_group(
+    teacher: TeacherModel, group_id: UUID
+) -> Tuple[Dict[str, Any], int]:
+    """Opportunity for the Curator of group to appoint students
+
+    :param teacher: an object of existing teacher,
+     received from @find_active_user by a UUID from url
+    :type teacher: TeacherModel
+    :param group_id: UUID of Specialty from url
+    :type group_id: UUID
+    :return: Tuple with a dictionary that contains 'message' and
+     "data" of the appointed items and status code for the Response
+    """
     data = request.get_json()
-    group_id = data.get("group_id", None)
-    if not group_id:
-        raise NotProvided(ITEM_NOT_PROVIDED.format(GROUP))
-    group = GroupModel.get_by_id(group_id)
-    if not group:
-        raise SearchException(NOT_FOUND_BY_ID.format(GROUP, group_id))
-    if group.curator_id == teacher.id:
-        raise PermissionError(
-            PERMISSION_DENIED.format(str(teacher.id))
-        )  # message should be changed
-    group_json, student_ids = process_many_to_many_insert(
-        group, group_schema, STUDENT, data, StudentModel
+    student_ids = data.get("student_ids")
+    group = process_entity_with_teacher(teacher, group_id, GroupModel, GROUP)
+    group_json = process_many_to_many_insert(
+        group, group_schema, STUDENT, student_ids, StudentModel
     )
     return {
         "message": APPOINT_ITEM.format(student_ids, group.name),
         "data": group_json,
+    }, 200
+
+
+@user_blprnt.route(
+    "/teachers/teacher/<uuid:teacher_id>/appoint-subjects-to-specialty/specialty/<uuid:specialty_id>",
+    methods=["POST"],
+)
+@jwt_required()
+@find_active_user(TeacherModel, TEACHER, check_jwt=True)
+def appoint_subject_to_specialty(
+    teacher: TeacherModel, specialty_id: UUID
+) -> Tuple[Dict[str, Any], int]:
+    """Opportunity for the Head Teacher of specialty to appoint subjects
+
+    :param teacher: an object of existing teacher,
+     received from @find_active_user by a UUID from url
+    :type teacher: TeacherModel
+    :param specialty_id: UUID of Specialty from url
+    :type specialty_id: UUID
+    :return: Tuple with a dictionary that contains 'message' and
+     "data" of the appointed items and status code for the Response
+    """
+    data = request.get_json()
+    subject_ids = data.get("subject_ids")
+    specialty = process_entity_with_teacher(
+        teacher, specialty_id, SpecialtyModel, SPECIALTY
+    )
+    specialty_json = process_many_to_many_insert(
+        specialty, specialty_schema, SUBJECT, subject_ids, SubjectModel
+    )
+    return {
+        "message": APPOINT_ITEM.format(subject_ids, specialty.name),
+        "data": specialty_json,
     }, 200

@@ -105,6 +105,9 @@ class LoginSchema(Schema):
     email = fields.String()
     password = fields.String()
 
+    class Meta:
+        load_only = ("password",)
+
     @validates("email")
     def validate_email(self, value):
         if not VALIDATE_EMAIL.fullmatch(value):

@@ -85,6 +85,7 @@ def delete_specialty(specialty_id):
     }, 200
 
 
+# in teachers
 @specialty_blprnt.route(
     "/specialty/<uuid:specialty_id>/appoint-subjects/appoint-subject/<uuid:subject_id>",
     methods=["POST"],

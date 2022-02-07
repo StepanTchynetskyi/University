@@ -5,6 +5,8 @@ from application.university.utils.constants import (
     NOT_ACTIVE_USER,
     NOT_FOUND_BY_ID,
     ITEM_NOT_PROVIDED,
+    PERMISSION_DENIED,
+    GROUP,
 )
 from application.university.utils.custom_exceptions import (
     SearchException,
@@ -69,10 +71,8 @@ def update_obj_with_name_and_year(
 
 
 def process_many_to_many_insert(
-    entity_obj, entity_schema, item_type, item_data, item_model
+    entity_obj, entity_schema, item_type, item_ids, item_model
 ):
-    item_to_find = item_type.lower() + "_ids"
-    item_ids = item_data.get(item_to_find, None)
     if not item_ids:
         raise NotProvided(ITEM_NOT_PROVIDED.format(item_type))
     items = item_model.get_by_ids(item_ids)
@@ -85,4 +85,18 @@ def process_many_to_many_insert(
     else:
         raise SearchException(NOT_FOUND_BY_ID.format(item_type, not_found_ids))
     entity_json = entity_schema.dump(entity_obj)
-    return entity_json, item_ids
+    return entity_json
+
+
+def process_entity_with_teacher(teacher, entity_id, entity_model, entity_type):
+    entity = entity_model.get_by_id(entity_id)
+    if not entity:
+        raise SearchException(NOT_FOUND_BY_ID.format(entity_type, entity_id))
+    entity_teacher_id = (
+        entity.curator_id if entity_type == GROUP else entity.teacher_id
+    )
+    if entity_teacher_id != teacher.id:
+        raise PermissionError(
+            PERMISSION_DENIED.format(str(teacher.id))
+        )  # message should be changed
+    return entity
