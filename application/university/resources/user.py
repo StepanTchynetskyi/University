@@ -245,14 +245,6 @@ def appoint_subjects_to_teacher(teacher):
     }, 200
 
 
-# @user_blprnt.route(
-#     "/students/student/<uuid:student_id>/appoint-groups/appoint-group/<uuid:group_id>",
-#     methods=["POST"],
-# )
-# def appoint_group_to_student(student_id, group_id):
-#     return {"message: ": "TODO"}, 200
-
-
 @user_blprnt.route(
     "/teachers/teacher/<uuid:teacher_id>/appoint-student-to-group",
     methods=["POST"],
