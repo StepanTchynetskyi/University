@@ -4,8 +4,12 @@ from application.university.utils.constants import (
     DOES_NOT_EXIST,
     NOT_ACTIVE_USER,
     NOT_FOUND_BY_ID,
+    ITEM_NOT_PROVIDED,
 )
-from application.university.utils.custom_exceptions import SearchException
+from application.university.utils.custom_exceptions import (
+    SearchException,
+    NotProvided,
+)
 from application.university.utils.process_dates import (
     check_accessibility_for_name_and_year,
 )
@@ -62,3 +66,23 @@ def update_obj_with_name_and_year(
     entity_obj.save_to_db()
     entity_json = entity_info.schema.dump(entity_obj)
     return entity_json
+
+
+def process_many_to_many_insert(
+    entity_obj, entity_schema, item_type, item_data, item_model
+):
+    item_to_find = item_type.lower() + "_ids"
+    item_ids = item_data.get(item_to_find, None)
+    if not item_ids:
+        raise NotProvided(ITEM_NOT_PROVIDED.format(item_type))
+    items = item_model.get_by_ids(item_ids)
+    if not items:
+        raise SearchException(NOT_FOUND_BY_ID.format(item_type, item_ids))
+    not_found_ids = [item.id for item in items if str(item.id) not in item_ids]
+    if not not_found_ids:
+        entity_obj.subjects.extend(items)
+        entity_obj.save_to_db()
+    else:
+        raise SearchException(NOT_FOUND_BY_ID.format(item_type, not_found_ids))
+    entity_json = entity_schema.dump(entity_obj)
+    return entity_json, item_ids

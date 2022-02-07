@@ -89,7 +89,7 @@ class TeacherSchema(ma.SQLAlchemyAutoSchema, UserValidation):
         "SpecialtySchema", many=False, exclude=("teacher", "teacher_id")
     )
 
-    subjects = ma.Nested("SubjectSchema", many=True)
+    subjects = ma.Nested("SubjectSchema", many=True, exclude=("teachers",))
 
     class Meta:
         model = TeacherModel

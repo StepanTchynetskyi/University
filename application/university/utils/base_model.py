@@ -25,6 +25,10 @@ class BaseModel(db.Model):
     def get_by_id(cls, searched_id):
         return cls.query.filter_by(id=searched_id).first()
 
+    @classmethod
+    def get_by_ids(cls, ids):
+        return cls.query.filter(cls.id.in_(ids)).all()
+
     def save_to_db(self):
         db.session.add(self)
         try:

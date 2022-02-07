@@ -4,9 +4,12 @@ from flask_jwt_extended import (
     create_refresh_token,
     get_jwt,
     jwt_required,
+    get_jwt_identity,
 )
 
+from application import SubjectModel, GroupModel
 from application.blacklist import BLACKLIST
+from application.university.schemas.group import GroupSchema
 from application.university.schemas.user import (
     UserSchema,
     StudentSchema,
@@ -31,10 +34,21 @@ from application.university.utils.constants import (
     STUDENT,
     TEACHER,
     POSITION,
+    PERMISSION_DENIED,
+    APPOINT_ITEM,
+    ITEM_NOT_PROVIDED,
+    SUBJECT,
+    NOT_FOUND_BY_ID,
+    GROUP,
 )
 from application.university.utils.utils import (
     update_specific_user,
     check_password,
+    process_many_to_many_insert,
+)
+from application.university.utils.custom_exceptions import (
+    SearchException,
+    NotProvided,
 )
 
 user_blprnt = Blueprint("users", __name__, url_prefix="/users")
@@ -44,6 +58,7 @@ user_schema = UserSchema()
 student_schema = StudentSchema()
 teacher_schema = TeacherSchema()
 login_schema = LoginSchema()
+group_schema = GroupSchema()
 
 
 @user_blprnt.route("/students/student/create", methods=["POST"])
@@ -57,7 +72,6 @@ def create_student(student):
 
 
 @user_blprnt.route("/students", methods=["GET"])
-@jwt_required()
 def get_students():
     students = [
         student_schema.dump(student)
@@ -73,6 +87,7 @@ def get_student(student):
 
 
 @user_blprnt.route("/students/student/<uuid:student_id>", methods=["PUT"])
+@jwt_required()
 @find_active_user(StudentModel, STUDENT)
 def update_student(student):
     student_json = update_specific_user(student, student_schema, request)
@@ -126,6 +141,7 @@ def get_teacher(teacher):
 
 
 @user_blprnt.route("/teachers/teacher/<uuid:teacher_id>", methods=["PUT"])
+@jwt_required()
 @find_active_user(TeacherModel, TEACHER)
 def update_teacher(teacher):
     position_id = request.get_json().get("position_id", None)
@@ -185,33 +201,80 @@ def logout_user():
     return {"message": "Successfully logged out"}, 200
 
 
+@auth_blprnt.route("/refresh", methods=["POST"])
+@jwt_required(refresh=True)
+def refresh():
+    identity = get_jwt_identity()
+    access_token = create_access_token(identity=identity, fresh=False)
+    return {"data": {"access_token": access_token}}
+
+
 @user_blprnt.route(
     "/teachers/teacher/<uuid:teacher_id>/appoint-subjects/appoint-subject/<uuid:subject_id>",
     methods=["POST"],
 )
-def appoint_subject_to_teacher(teacher_id, subject_id):
-    return {"message: ": "TODO"}, 200
+@jwt_required()
+@find_active_user(TeacherModel, TEACHER, check_jwt=True)
+def appoint_subject_to_teacher(teacher, subject_id):
+    subject = SubjectModel.get_by_id(subject_id)
+    if not subject:
+        raise SearchException("Subject not found", status_code=400)
+    teacher.subjects.append(subject)
+    teacher.save_to_db()
+    teacher_json = teacher_schema.dump(teacher)
+    return {
+        "message": APPOINT_ITEM.format(subject.name, teacher.first_name),
+        "data": teacher_json,
+    }, 200
 
 
 @user_blprnt.route(
-    "/teachers/teacher/<uuid:teacher_id>/appoint-subjects/appoint-subjects",
+    "/teachers/teacher/<uuid:teacher_id>/appoint-subjects",
     methods=["POST"],
 )
-def appoint_subjects_to_teacher(teacher_id):
-    return {"message: ": "TODO"}, 200
+@jwt_required()
+@find_active_user(TeacherModel, TEACHER, check_jwt=True)
+def appoint_subjects_to_teacher(teacher):
+    data = request.get_json()
+    teacher_json, subject_ids = process_many_to_many_insert(
+        teacher, teacher_schema, SUBJECT, data, SubjectModel
+    )
+    return {
+        "message": APPOINT_ITEM.format(subject_ids, teacher.first_name),
+        "data": teacher_json,
+    }, 200
+
+
+# @user_blprnt.route(
+#     "/students/student/<uuid:student_id>/appoint-groups/appoint-group/<uuid:group_id>",
+#     methods=["POST"],
+# )
+# def appoint_group_to_student(student_id, group_id):
+#     return {"message: ": "TODO"}, 200
 
 
 @user_blprnt.route(
-    "/students/student/<uuid:student_id>/appoint-groups/appoint-group/<uuid:group_id>",
+    "/teachers/teacher/<uuid:teacher_id>/appoint-student-to-group",
     methods=["POST"],
 )
-def appoint_group_to_student(student_id, group_id):
-    return {"message: ": "TODO"}, 200
-
-
-@user_blprnt.route(
-    "/students/student/<uuid:student_id>/appoint-groups", methods=["POST"]
-)
-def appoint_group_to_students(student_id):
-    # TODO: add students from group, and students from list of UUIDs
-    return {"message: ": "TODO"}, 200
+@jwt_required()
+@find_active_user(TeacherModel, TEACHER, check_jwt=True)
+def appoint_student_to_group(teacher):
+    data = request.get_json()
+    group_id = data.get("group_id", None)
+    if not group_id:
+        raise NotProvided(ITEM_NOT_PROVIDED.format(GROUP))
+    group = GroupModel.get_by_id(group_id)
+    if not group:
+        raise SearchException(NOT_FOUND_BY_ID.format(GROUP, group_id))
+    if group.curator_id == teacher.id:
+        raise PermissionError(
+            PERMISSION_DENIED.format(str(teacher.id))
+        )  # message should be changed
+    group_json, student_ids = process_many_to_many_insert(
+        group, group_schema, STUDENT, data, StudentModel
+    )
+    return {
+        "message": APPOINT_ITEM.format(student_ids, group.name),
+        "data": group_json,
+    }, 200

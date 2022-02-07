@@ -6,6 +6,7 @@ from application.university.schemas.response import BaseResponse
 from application.university.utils.custom_exceptions import (
     SearchException,
     CreateException,
+    NotProvided,
 )
 
 app = create_app()
@@ -31,6 +32,16 @@ def handle_create_exception(err):
 @app.errorhandler(exc.SQLAlchemyError)
 def handle_sqlalchemy_errror(err):
     return {"errors": {err.__class__.__name__: str(err)}}, 400
+
+
+@app.errorhandler(PermissionError)
+def handle_permission_errror(err):
+    return {"errors": {err.__class__.__name__: str(err)}}, 403
+
+
+@app.errorhandler(NotProvided)
+def handle_not_provided_error(err):
+    return {"errors": {err.__class__.__name__: str(err)}}, err.status_code
 
 
 @app.after_request

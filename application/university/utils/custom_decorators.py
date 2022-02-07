@@ -1,13 +1,19 @@
 import uuid
 from functools import wraps
 
-from application import UserModel
+from flask_jwt_extended import get_jwt_identity
+
+from application import UserModel, PositionModel
 from application.university.utils.constants import (
     NOT_FOUND_BY_ID,
     NOT_ACTIVE_USER,
     ALREADY_EXISTS,
     PW_DO_NOT_MATCH,
     ALREADY_EXISTS_WITH_YEAR,
+    POSITION,
+    DOES_NOT_EXIST,
+    STUDENT,
+    PERMISSION_DENIED,
 )
 from application.university.utils.custom_exceptions import (
     SearchException,
@@ -16,11 +22,14 @@ from application.university.utils.custom_exceptions import (
 from application.university.utils.utils import get_hashed_password
 
 
-def find_active_user(specific_model, user_type):
+def find_active_user(specific_model, user_type, *, check_jwt=False):
     def decorator(func):
         @wraps(func)
         def wrapper(**kwargs):
-            user_id = list(kwargs.values())[0]
+            if user_type == STUDENT:
+                user_id = kwargs.pop("student_id")
+            else:
+                user_id = kwargs.pop("teacher_id")
             specific_user = specific_model.get_by_id(user_id)
             if not specific_user:
                 raise SearchException(
@@ -32,7 +41,13 @@ def find_active_user(specific_model, user_type):
                     message=NOT_ACTIVE_USER.format(user_type, user_id),
                     status_code=403,
                 )
-            return func(specific_user)
+            if check_jwt:
+                current_user_id = uuid.UUID(get_jwt_identity())
+                if specific_user.id != current_user_id:
+                    raise PermissionError(
+                        PERMISSION_DENIED.format(str(current_user_id))
+                    )
+            return func(specific_user, **kwargs)
 
         return wrapper
 
@@ -53,6 +68,14 @@ def process_user_json(user_schema, user_type, request):
             if user_json["password"] != user_json.get("password1", None):
                 raise CreateException(PW_DO_NOT_MATCH)
             else:
+                position_id = request.get_json().get("position_id", None)
+                if position_id:
+                    position = PositionModel.get_by_id(position_id)
+                    if not position:
+                        raise SearchException(
+                            DOES_NOT_EXIST.format(POSITION, position_id),
+                            status_code=400,
+                        )
                 user.password = get_hashed_password(
                     user.password.encode("utf8")
                 ).decode("utf-8")

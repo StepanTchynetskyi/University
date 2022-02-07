@@ -1,4 +1,3 @@
-from sqlalchemy import exc
 from sqlalchemy.dialects.postgresql import UUID, VARCHAR
 
 from application.db import db
@@ -28,6 +27,10 @@ class UserModel(BaseModel):
     }
 
     @classmethod
+    def get_all_records(cls):
+        return cls.query.filter_by(is_active=True)
+
+    @classmethod
     def get_by_email(cls, email):
         return cls.query.filter_by(email=email).first()
 
@@ -43,12 +46,8 @@ class StudentModel(UserModel):
     year_of_study = db.Column(db.SmallInteger, nullable=False)
     __mapper_args__ = {"polymorphic_identity": "student"}
 
-    @classmethod
-    def get_all_records(cls):
-        return cls.query.filter_by(is_active=True)
 
-
-class TeacherModel(BaseModel):
+class TeacherModel(UserModel):
     __tablename__ = "teacher"
 
     id = db.Column(
@@ -74,7 +73,3 @@ class TeacherModel(BaseModel):
         backref="teacher",
     )
     __mapper_args__ = {"polymorphic_identity": "teacher"}
-
-    @classmethod
-    def get_all_records(cls):
-        return cls.query.filter_by(is_active=True)

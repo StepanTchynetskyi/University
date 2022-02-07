@@ -1,4 +1,4 @@
-from flask import jsonify, Blueprint, request
+from flask import Blueprint, request
 
 from application.university.schemas.specialty import SpecialtySchema
 from application.university.models.specialty import SpecialtyModel
