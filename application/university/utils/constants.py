@@ -23,6 +23,7 @@ DATE_NOT_PROVIDED = "Error. Date Is Not Provided"
 PERMISSION_DENIED = "Permission Denied <id={}>"
 APPOINT_ITEM = "{} appointed to {}"
 ITEM_NOT_PROVIDED = "{} Field Is Not Provided."
+EMAIL_DOES_NOT_EXISTS = "User <email={}> Does Not Exist."
 
 STUDENT = "Student"
 TEACHER = "Teacher"

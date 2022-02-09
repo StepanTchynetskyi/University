@@ -7,6 +7,7 @@ from application.university.utils.custom_exceptions import (
     SearchException,
     CreateException,
     NotProvided,
+    InvalidCredentials,
 )
 
 app = create_app()
@@ -41,6 +42,11 @@ def handle_permission_errror(err):
 
 @app.errorhandler(NotProvided)
 def handle_not_provided_error(err):
+    return {"errors": {err.__class__.__name__: str(err)}}, err.status_code
+
+
+@app.errorhandler(InvalidCredentials)
+def handle_invalid_credentials(err):
     return {"errors": {err.__class__.__name__: str(err)}}, err.status_code
 
 

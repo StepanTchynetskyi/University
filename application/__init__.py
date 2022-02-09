@@ -46,7 +46,9 @@ def create_app():
 
     @jwt.revoked_token_loader
     def revoked_token_callback(jwt_header, jwt_data):
-        return {"errors": "The token has been revoked."}, 401
+        return {
+            "errors": {"TokenException": "The token has been revoked."}
+        }, 401
 
     register_blueprints(app)
     return app

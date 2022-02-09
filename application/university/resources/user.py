@@ -9,7 +9,6 @@ from flask_jwt_extended import (
     jwt_required,
     get_jwt_identity,
 )
-
 from application import SubjectModel, GroupModel, SpecialtyModel
 from application.blacklist import BLACKLIST
 from application.university.schemas.group import GroupSchema
@@ -42,6 +41,8 @@ from application.university.utils.constants import (
     SUBJECT,
     GROUP,
     SPECIALTY,
+    EMAIL_DOES_NOT_EXISTS,
+    PW_DO_NOT_MATCH,
 )
 from application.university.utils.utils import (
     update_specific_user,
@@ -51,6 +52,7 @@ from application.university.utils.utils import (
 )
 from application.university.utils.custom_exceptions import (
     SearchException,
+    InvalidCredentials,
 )
 
 user_blprnt = Blueprint("users", __name__, url_prefix="/users")
@@ -111,7 +113,7 @@ def get_student(student: StudentModel) -> Tuple[Dict[str, Any], int]:
 
 
 @user_blprnt.route("/students/student/<uuid:student_id>", methods=["PUT"])
-@jwt_required()
+@jwt_required(fresh=True)
 @find_active_user(StudentModel, STUDENT, check_jwt=True)
 def update_student(student: StudentModel) -> Tuple[Dict[str, Any], int]:
     """Opportunity for the Student to update account
@@ -133,6 +135,7 @@ def update_student(student: StudentModel) -> Tuple[Dict[str, Any], int]:
 @user_blprnt.route(
     "/students/student/hard_delete/<uuid:student_id>", methods=["DELETE"]
 )
+@jwt_required(fresh=True)
 @find_active_user(StudentModel, STUDENT, check_jwt=True)
 def hard_delete_student(student: StudentModel) -> Tuple[Dict[str, Any], int]:
     """Opportunity for the Student to delete account
@@ -147,6 +150,7 @@ def hard_delete_student(student: StudentModel) -> Tuple[Dict[str, Any], int]:
 
 
 @user_blprnt.route("/students/student/<uuid:student_id>", methods=["DELETE"])
+@jwt_required(fresh=True)
 @find_active_user(StudentModel, STUDENT, check_jwt=True)
 def soft_delete_student(student: StudentModel) -> Tuple[Dict[str, Any], int]:
     """Opportunity for the Student to softly delete account
@@ -208,7 +212,7 @@ def get_teacher(teacher: TeacherModel) -> Tuple[Dict[str, Any], int]:
 
 
 @user_blprnt.route("/teachers/teacher/<uuid:teacher_id>", methods=["PUT"])
-@jwt_required()
+@jwt_required(fresh=True)
 @find_active_user(TeacherModel, TEACHER, check_jwt=True)
 def update_teacher(teacher: TeacherModel) -> Tuple[Dict[str, Any], int]:
     """Opportunity for the Teacher to update account
@@ -223,12 +227,10 @@ def update_teacher(teacher: TeacherModel) -> Tuple[Dict[str, Any], int]:
     if position_id:
         position = PositionModel.get_by_id(position_id)
         if not position:
-            return {
-                "message": DOES_NOT_EXIST.format(POSITION, position.id)
-            }, 400
+            raise SearchException(DOES_NOT_EXIST.format(POSITION, position_id))
     teacher_json = update_specific_user(teacher, teacher_schema, request)
     return {
-        "message": UPDATED_SUCCESSFULLY.format(STUDENT, teacher.id),
+        "message": UPDATED_SUCCESSFULLY.format(TEACHER, teacher.id),
         "data": teacher_json,
     }, 200
 
@@ -237,7 +239,7 @@ def update_teacher(teacher: TeacherModel) -> Tuple[Dict[str, Any], int]:
 @user_blprnt.route(
     "/teachers/teacher/hard_delete/<uuid:teacher_id>", methods=["DELETE"]
 )
-@jwt_required()
+@jwt_required(fresh=True)
 @find_active_user(TeacherModel, TEACHER, check_jwt=True)
 def hard_delete_teacher(teacher: TeacherModel) -> Tuple[Dict[str, Any], int]:
     """Opportunity for the Teacher to delete account
@@ -252,7 +254,7 @@ def hard_delete_teacher(teacher: TeacherModel) -> Tuple[Dict[str, Any], int]:
 
 
 @user_blprnt.route("/teachers/teacher/<uuid:teacher_id>", methods=["DELETE"])
-@jwt_required()
+@jwt_required(fresh=True)
 @find_active_user(TeacherModel, TEACHER, check_jwt=True)
 def soft_delete_teacher(teacher: TeacherModel) -> Tuple[Dict[str, Any], int]:
     """Opportunity for the Teacher to softly delete account
@@ -264,7 +266,7 @@ def soft_delete_teacher(teacher: TeacherModel) -> Tuple[Dict[str, Any], int]:
     """
     teacher.is_active = False
     teacher.save_to_db()
-    return {"message": SUCCESSFULLY_DELETED.format(STUDENT, teacher.id)}, 200
+    return {"message": SUCCESSFULLY_DELETED.format(TEACHER, teacher.id)}, 200
 
 
 @auth_blprnt.route("/login", methods=["POST"])
@@ -274,19 +276,25 @@ def login_user() -> Tuple[Dict[str, Any], int]:
     :return: Tuple with a dictionary that contains "data" with
      'access_token', 'refresh_token', 'user_email' and status code
     """
+
     user_json = request.get_json()
     loaded_user = login_schema.load(user_json)
     user = UserModel.get_by_email(loaded_user["email"])
-    if user and check_password(loaded_user["password"], user.password):
-        access_token = create_access_token(identity=user.id, fresh=True)
-        refresh_token = create_refresh_token(user.id)
-        return {
-            "data": {
-                "access_token": access_token,
-                "refresh_token": refresh_token,
-                "user": login_schema.dump(loaded_user),
-            }
-        }, 200
+    if not user:
+        raise SearchException(
+            EMAIL_DOES_NOT_EXISTS.format(loaded_user["email"])
+        )
+    if not check_password(loaded_user["password"], user.password):
+        raise InvalidCredentials(PW_DO_NOT_MATCH)
+    access_token = create_access_token(identity=user.id, fresh=True)
+    refresh_token = create_refresh_token(user.id)
+    return {
+        "data": {
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+            "user": login_schema.dump(loaded_user),
+        }
+    }, 200
 
 
 @auth_blprnt.route("/logout", methods=["POST"])
@@ -315,7 +323,7 @@ def refresh() -> Tuple[Dict[str, Any], int]:
 
 
 @user_blprnt.route(
-    "/teachers/teacher/<uuid:teacher_id>/appoint-subjects/appoint-subject/subject/<uuid:subject_id>",
+    "/teachers/teacher/<uuid:teacher_id>/appoint-subjects/appoint-subject/subjects/subject/<uuid:subject_id>",
     methods=["POST"],
 )
 @jwt_required()
@@ -363,7 +371,7 @@ def appoint_subjects_to_teacher(
      "data" of the appointed items and status code for the Response
     """
     data = request.get_json()
-    subject_ids = data.get("subject_ids")
+    subject_ids = data.get("subject_ids", None)
     teacher_json = process_many_to_many_insert(
         teacher, teacher_schema, SUBJECT, subject_ids, SubjectModel
     )
@@ -374,7 +382,7 @@ def appoint_subjects_to_teacher(
 
 
 @user_blprnt.route(
-    "/teachers/teacher/<uuid:teacher_id>/appoint-student-to-group/group/<uuid:group_id>",
+    "/teachers/teacher/<uuid:teacher_id>/appoint-student-to-group/groups/group/<uuid:group_id>",
     methods=["POST"],
 )
 @jwt_required()
@@ -393,7 +401,7 @@ def appoint_student_to_group(
      "data" of the appointed items and status code for the Response
     """
     data = request.get_json()
-    student_ids = data.get("student_ids")
+    student_ids = data.get("student_ids", None)
     group = process_entity_with_teacher(teacher, group_id, GroupModel, GROUP)
     group_json = process_many_to_many_insert(
         group, group_schema, STUDENT, student_ids, StudentModel
@@ -405,7 +413,8 @@ def appoint_student_to_group(
 
 
 @user_blprnt.route(
-    "/teachers/teacher/<uuid:teacher_id>/appoint-subjects-to-specialty/specialty/<uuid:specialty_id>",
+    "/teachers/teacher/<uuid:teacher_id>/appoint-subjects-to-specialty/"
+    "specialties/specialty/<uuid:specialty_id>",
     methods=["POST"],
 )
 @jwt_required()
@@ -424,7 +433,7 @@ def appoint_subject_to_specialty(
      "data" of the appointed items and status code for the Response
     """
     data = request.get_json()
-    subject_ids = data.get("subject_ids")
+    subject_ids = data.get("subject_ids", None)
     specialty = process_entity_with_teacher(
         teacher, specialty_id, SpecialtyModel, SPECIALTY
     )
@@ -434,4 +443,25 @@ def appoint_subject_to_specialty(
     return {
         "message": APPOINT_ITEM.format(subject_ids, specialty.name),
         "data": specialty_json,
+    }, 200
+
+
+@user_blprnt.route(
+    "/teachers/teacher/<uuid:teacher_id>/appoint-subject-to-group/groups/group/<uuid:group_id>",
+    methods=["POST"],
+)
+@jwt_required()
+@find_active_user(TeacherModel, TEACHER, check_jwt=True)
+def appoint_subject_to_group(
+    teacher: TeacherModel, group_id: UUID
+) -> Tuple[Dict[str, Any], int]:
+    data = request.get_json()
+    subject_ids = data.get("subject_ids", None)
+    group = process_entity_with_teacher(teacher, group_id, GroupModel, GROUP)
+    group_json = process_many_to_many_insert(
+        group, group_schema, SUBJECT, subject_ids, SubjectModel
+    )
+    return {
+        "message": APPOINT_ITEM.format(subject_ids, group.name),
+        "data": group_json,
     }, 200

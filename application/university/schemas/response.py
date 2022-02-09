@@ -1,5 +1,3 @@
-# base response {{"message", status_code}, data , errors}
-
 from marshmallow import Schema, fields
 
 

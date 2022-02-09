@@ -1,4 +1,4 @@
-from flask import jsonify, Blueprint, request
+from flask import Blueprint, request
 
 from application.university.schemas.group import GroupSchema
 from application.university.models.group import GroupModel
@@ -72,34 +72,3 @@ def delete_position(group_id):
         return {"message": NOT_FOUND_BY_ID.format(GROUP, group_id)}, 400
     group.remove_from_db()
     return {"message": SUCCESSFULLY_DELETED.format(GROUP, group_id)}, 200
-
-
-@group_blprnt.route(
-    "/group/<uuid:group_id>/appoint-students/appoint-student/<uuid:student_id>",
-    methods=["POST"],
-)
-def appoint_student_to_group(group_id, student_id):
-    return {"message: ": "TODO"}, 200
-
-
-@group_blprnt.route(
-    "/group/<uuid:group_id>/appoint-students", methods=["POST"]
-)
-def appoint_students_to_group(group_id):
-    # TODO: add students from group, and students from list of UUIDs
-    return {"message: ": "TODO"}, 200
-
-
-@group_blprnt.route(
-    "/group/<uuid:group_id>/appoint-subjects/appoint-subject/<uuid:subject_id>",
-    methods=["POST"],
-)
-def appoint_subject_to_group(group_id, subject_id):
-    return {"message: ": "TODO"}, 200
-
-
-@group_blprnt.route(
-    "/group/<uuid:group_id>/appoint-subjects", methods=["POST"]
-)
-def appoint_subjects_to_groups(group_id):
-    return {"message: ": "TODO"}, 200

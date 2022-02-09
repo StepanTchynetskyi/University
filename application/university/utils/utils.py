@@ -1,5 +1,7 @@
 import bcrypt
 
+from marshmallow import ValidationError
+
 from application.university.utils.constants import (
     DOES_NOT_EXIST,
     NOT_ACTIVE_USER,
@@ -7,13 +9,11 @@ from application.university.utils.constants import (
     ITEM_NOT_PROVIDED,
     PERMISSION_DENIED,
     GROUP,
+    ALREADY_EXISTS_WITH_YEAR,
 )
 from application.university.utils.custom_exceptions import (
     SearchException,
     NotProvided,
-)
-from application.university.utils.process_dates import (
-    check_accessibility_for_name_and_year,
 )
 
 
@@ -100,3 +100,25 @@ def process_entity_with_teacher(teacher, entity_id, entity_model, entity_type):
             PERMISSION_DENIED.format(str(teacher.id))
         )  # message should be changed
     return entity
+
+
+def check_accessibility_for_name_and_year(
+    subject, subject_json, model, checked_entity
+):
+    year = subject_json.get("year", None)
+    name = subject_json.get("name", None)
+    if year or name:
+        year, name = year or subject.year, name or subject.name
+        if isinstance(year, int):
+            searched_obj = model.get_by_name_and_year(name, year)
+            if searched_obj:
+                raise SearchException(
+                    ALREADY_EXISTS_WITH_YEAR.format(
+                        checked_entity,
+                        searched_obj.name,
+                        searched_obj.year,
+                        400,
+                    )
+                )
+        else:
+            raise ValidationError({"year": "Not a valid integer"})

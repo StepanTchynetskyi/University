@@ -1,4 +1,4 @@
-from flask import jsonify, Blueprint, request
+from flask import Blueprint, request
 
 from application.university.schemas.subject import SubjectSchema
 from application.university.models.subject import SubjectModel
@@ -67,51 +67,3 @@ def delete_subject(subject_id):
         return {"message": NOT_FOUND_BY_ID.format(SUBJECT, subject_id)}, 400
     subject.remove_from_db()
     return {"message": SUCCESSFULLY_DELETED.format(SUBJECT, subject_id)}, 200
-
-
-@subject_blprnt.route(
-    "/subject/<uuid:subject_id>/appoint-teachers/appoint-teacher/<uuid:teacher_id>",
-    methods=["POST"],
-)
-def appoint_teacher_to_subject(subject_id, teacher_id):
-    return {"message: ": "TODO"}, 200
-
-
-@subject_blprnt.route(
-    "/subject/<uuid:subject_id>/appoint-teachers", methods=["POST"]
-)
-def appoint_teachers_to_subject(subject_id):
-    # TODO: appoint teachers to subjects from array of UUIDs
-    return {"message: ": "TODO"}, 200
-
-
-@subject_blprnt.route(
-    "/subject/<uuid:subject_id>/appoint-groups/appoint-group/<uuid:group_id>",
-    methods=["POST"],
-)
-def appoint_group_to_subject(subject_id, group_id):
-    return {"message: ": "TODO"}, 200
-
-
-@subject_blprnt.route(
-    "/subject/<uuid:subject_id>/appoint-groups", methods=["POST"]
-)
-def appoint_groups_to_subject(subject_id):
-    # TODO: appoint groups to subjects from array of UUIDs or as in previous years
-    return {"message: ": "TODO"}, 200
-
-
-@subject_blprnt.route(
-    "/subject/<uuid:subject_id>/appoint-specialties/appoint-specialty/<uuid:specialty_id>",
-    methods=["POST"],
-)
-def appoint_specialty_to_subject(subject_id, specialty_id):
-    return {"message: ": "TODO"}, 200
-
-
-@subject_blprnt.route(
-    "/subject/<uuid:subject_id>/appoint-specialties", methods=["POST"]
-)
-def appoint_specialties_to_subject(subject_id):
-    # TODO: appoint specialties to subject from array of UUIDs
-    return {"message: ": "TODO"}, 200

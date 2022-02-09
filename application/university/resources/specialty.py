@@ -83,19 +83,3 @@ def delete_specialty(specialty_id):
     return {
         "message": SUCCESSFULLY_DELETED.format(SPECIALTY, specialty_id)
     }, 200
-
-
-# in teachers
-@specialty_blprnt.route(
-    "/specialty/<uuid:specialty_id>/appoint-subjects/appoint-subject/<uuid:subject_id>",
-    methods=["POST"],
-)
-def appoint_subject_to_specialty(specialty_id, subject_id):
-    return {"message: ": "TODO"}, 200
-
-
-@specialty_blprnt.route(
-    "/specialty/<uuid:specialty_id>/appoint-subjects", methods=["POST"]
-)
-def appoint_subjects_to_specialties(specialty_id):
-    return {"message: ": "TODO"}, 200
