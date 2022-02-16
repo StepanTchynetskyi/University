@@ -2,8 +2,8 @@ import json
 from marshmallow import ValidationError
 from sqlalchemy import exc
 from application import create_app
-from application.university.schemas.response import BaseResponse
-from application.university.utils.custom_exceptions import (
+from utils.response import BaseResponse
+from utils.custom_exceptions import (
     SearchException,
     CreateException,
     NotProvided,
@@ -36,7 +36,7 @@ def handle_sqlalchemy_errror(err):
 
 
 @app.errorhandler(PermissionError)
-def handle_permission_errror(err):
+def handle_permission_error(err):
     return {"errors": {err.__class__.__name__: str(err)}}, 403
 
 
@@ -48,6 +48,11 @@ def handle_not_provided_error(err):
 @app.errorhandler(InvalidCredentials)
 def handle_invalid_credentials(err):
     return {"errors": {err.__class__.__name__: str(err)}}, err.status_code
+
+
+@app.errorhandler(ValueError)
+def handle_value_error(err):
+    return {"errors": {err.__class__.__name__: str(err)}}, 400
 
 
 @app.after_request

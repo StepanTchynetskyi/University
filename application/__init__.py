@@ -4,20 +4,6 @@ from flask_jwt_extended import JWTManager
 from application.db import db, migrate
 from application.ma import ma
 from application.blacklist import BLACKLIST
-from application.university.models.user import (
-    UserModel,
-    StudentModel,
-    TeacherModel,
-)
-from application.university.models.position import PositionModel
-from application.university.models.specialty import SpecialtyModel
-from application.university.models.group import GroupModel
-from application.university.models.subject import SubjectModel
-from application.university.resources.user import user_blprnt, auth_blprnt
-from application.university.resources.position import position_blprnt
-from application.university.resources.specialty import specialty_blprnt
-from application.university.resources.subject import subject_blprnt
-from application.university.resources.group import group_blprnt
 
 
 def create_app():
@@ -27,7 +13,6 @@ def create_app():
     app.config["PROPAGATE_EXCEPTIONS"] = True
 
     jwt = JWTManager(app)
-
     db.init_app(app)
     ma.init_app(app)
     migrate.init_app(app, db)
@@ -55,9 +40,16 @@ def create_app():
 
 
 def register_blueprints(app):
-    app.register_blueprint(user_blprnt)
-    app.register_blueprint(position_blprnt)
-    app.register_blueprint(specialty_blprnt)
-    app.register_blueprint(subject_blprnt)
-    app.register_blueprint(group_blprnt)
-    app.register_blueprint(auth_blprnt)
+    from users.urls import mod as user_mod
+    from positions.urls import mod as position_mod
+    from groups.urls import mod as group_mod
+    from auth.urls import mod as auth_mod
+    from specialties.urls import mod as specialty_mod
+    from subjects.urls import mod as subject_mod
+
+    app.register_blueprint(user_mod)
+    app.register_blueprint(position_mod)
+    app.register_blueprint(specialty_mod)
+    app.register_blueprint(subject_mod)
+    app.register_blueprint(group_mod)
+    app.register_blueprint(auth_mod)
