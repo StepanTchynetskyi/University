@@ -88,3 +88,35 @@ mod.add_url_rule(
     view_func=views.appoint_subject_to_group,
     methods=["POST"],
 )
+
+mod.add_url_rule(
+    "/teachers/teacher/<uuid:teacher_id>/appoint-subjects/disappoint-subject/"
+    "subjects/subject/<uuid:subject_id>",
+    view_func=views.remove_subject_from_teacher,
+    methods=["DELETE"],
+)
+
+mod.add_url_rule(
+    "/teachers/teacher/<uuid:teacher_id>/disappoint-subjects-from-teacher",
+    view_func=views.remove_subjects_from_teacher,
+    methods=["DELETE"],
+)
+
+mod.add_url_rule(
+    "/teachers/teacher/<uuid:teacher_id>/disappoint-student-from-group/groups/group/<uuid:group_id>",
+    view_func=views.remove_student_from_group,
+    methods=["DELETE"],
+)
+
+mod.add_url_rule(
+    "/teachers/teacher/<uuid:teacher_id>/disappoint-subjects-from-specialty/"
+    "specialties/specialty/<uuid:specialty_id>",
+    view_func=views.remove_subject_from_specialty,
+    methods=["DELETE"],
+)
+
+mod.add_url_rule(
+    "/teachers/teacher/<uuid:teacher_id>/disappoint-subjects-from-group/groups/group/<uuid:group_id>",
+    view_func=views.remove_subject_from_group,
+    methods=["DELETE"],
+)

@@ -35,6 +35,8 @@ from utils.constants import (
     SPECIALTY,
     NOT_FOUND_BY_ID,
     DATA_NOT_PROVIDED,
+    DISAPPOINT_ITEM,
+    ITEM_NOT_FOUND_IN_ARRAY,
 )
 from utils.utils import (
     get_entity_with_teacher,
@@ -43,7 +45,11 @@ from utils.custom_exceptions import (
     SearchException,
     NotProvided,
 )
-from users.utils.utils import get_items, update_specific_user
+from users.utils.utils import (
+    get_items,
+    update_specific_user,
+    remove_items_from_entity,
+)
 from users.utils.custom_decorators import process_user_json
 
 
@@ -383,3 +389,155 @@ def appoint_subject_to_group(
 
 
 # TODO: add remove endpoints for the many-to-many
+
+
+@jwt_required()
+@find_active_user(TeacherModel, TEACHER, check_jwt=True)
+def remove_subject_from_teacher(
+    teacher: TeacherModel, subject_id: UUID
+) -> Tuple[Dict[str, Any], int]:
+    """Allow the Teacher to disappoint specific subject
+
+    :param teacher: an object of existing teacher,
+     received from @find_active_user by a UUID from url
+    :type teacher: TeacherModel
+    :param subject_id: UUID of Subject from url
+    :type subject_id: UUID
+    :return: Tuple with a dictionary that contains 'message',
+    of the disappointed item, "data" of the present state and status code for the Response
+    """
+    subject = SubjectModel.get_by_id(subject_id)
+    if not subject:
+        raise SearchException(
+            NOT_FOUND_BY_ID.format(SUBJECT, subject_id), status_code=400
+        )
+    remove_items_from_entity(
+        teacher.subjects, TEACHER, teacher.id, [subject], SUBJECT
+    )
+    teacher.save_to_db()
+    teacher_json = teacher_schema.dump(teacher)
+    return {
+        "message": DISAPPOINT_ITEM.format(subject.name, teacher.first_name),
+        "data": teacher_json,
+    }, 200
+
+
+@jwt_required()
+@find_active_user(TeacherModel, TEACHER, check_jwt=True)
+def remove_subjects_from_teacher(
+    teacher: TeacherModel,
+) -> Tuple[Dict[str, Any], int]:
+    """Allow the Teacher to disappoint subjects
+
+    :param teacher: an object of existing teacher,
+     received from @find_active_user by a UUID from url
+    :type teacher: TeacherModel
+    :return: Tuple with a dictionary that contains 'message' of the disappointed items,
+     "data" of the present state and status code for the Response
+    """
+    data = request.get_json()
+    subject_ids = data.get("subject_ids", None)
+    subjects = get_items(SUBJECT, subject_ids, SubjectModel)
+    remove_items_from_entity(
+        teacher.subjects, TEACHER, teacher.id, subjects, SUBJECT
+    )
+    teacher.save_to_db()
+    teacher_json = teacher_schema.dump(teacher)
+    return {
+        "message": DISAPPOINT_ITEM.format(subject_ids, teacher.first_name),
+        "data": teacher_json,
+    }, 200
+
+
+@jwt_required()
+@find_active_user(TeacherModel, TEACHER, check_jwt=True)
+def remove_student_from_group(
+    teacher: TeacherModel, group_id: UUID
+) -> Tuple[Dict[str, Any], int]:
+    """Allow the Curator of group to disappoint students
+
+    :param teacher: an object of existing teacher,
+     received from @find_active_user by a UUID from url
+    :type teacher: TeacherModel
+    :param group_id: UUID of Specialty from url
+    :type group_id: UUID
+    :return: Tuple with a dictionary that contains 'message' and
+    of the disappointed items, "data" of the present state and status code for the Response
+    """
+    data = request.get_json()
+    student_ids = data.get("student_ids", None)
+    if not student_ids:
+        raise NotProvided(DATA_NOT_PROVIDED("student_ids"))
+    group = get_entity_with_teacher(teacher, group_id, GroupModel, GROUP)
+    students = get_items(STUDENT, student_ids, StudentModel)
+    remove_items_from_entity(
+        group.students, GROUP, group.id, students, STUDENT
+    )
+    group.save_to_db()
+    group_json = group_schema.dump(group)
+    return {
+        "message": DISAPPOINT_ITEM.format(student_ids, group.name),
+        "data": group_json,
+    }, 200
+
+
+@jwt_required()
+@find_active_user(TeacherModel, TEACHER, check_jwt=True)
+def remove_subject_from_specialty(
+    teacher: TeacherModel, specialty_id: UUID
+) -> Tuple[Dict[str, Any], int]:
+    """Allow the Head Teacher of specialty to disappoint subjects
+
+    :param teacher: an object of existing teacher,
+     received from @find_active_user by a UUID from url
+    :type teacher: TeacherModel
+    :param specialty_id: UUID of Specialty from url
+    :type specialty_id: UUID
+    :return: Tuple with a dictionary that contains 'message' and
+     of the disappointed items, "data" of the present state and status code for the Response
+    """
+    data = request.get_json()
+    subject_ids = data.get("subject_ids", None)
+    specialty = get_entity_with_teacher(
+        teacher, specialty_id, SpecialtyModel, SPECIALTY
+    )
+    subjects = get_items(SUBJECT, subject_ids, SubjectModel)
+    remove_items_from_entity(
+        specialty.subjects, SPECIALTY, specialty.id, subjects, SUBJECT
+    )
+    specialty.save_to_db()
+    specialty_json = specialty_schema.dump(specialty)
+    return {
+        "message": DISAPPOINT_ITEM.format(subject_ids, specialty.name),
+        "data": specialty_json,
+    }, 200
+
+
+@jwt_required()
+@find_active_user(TeacherModel, TEACHER, check_jwt=True)
+def remove_subject_from_group(
+    teacher: TeacherModel, group_id: UUID
+) -> Tuple[Dict[str, Any], int]:
+    """Allow the Curator of group to disappoint subjects from group
+
+    :param teacher: an object of existing teacher,
+     received from @find_active_user by a UUID from url
+    :type teacher: TeacherModel
+    :param group_id: UUID of Group from url
+    :type group_id: UUID
+    :return: Tuple with a dictionary that contains 'message'
+     of the disappointed items, "data" of the present state and status code for the Response
+    """
+    data = request.get_json()
+    subject_ids = data.get("subject_ids", None)
+    group = get_entity_with_teacher(teacher, group_id, GroupModel, GROUP)
+    subjects = get_items(SUBJECT, subject_ids, SubjectModel)
+    remove_items_from_entity(
+        group.subjects, GROUP, group.id, subjects, SUBJECT
+    )
+    group.save_to_db()
+    group_json = group_schema.dump(group)
+    return {
+        "message": DISAPPOINT_ITEM.format(subject_ids, group.name),
+        "data": group_json,
+    }, 200

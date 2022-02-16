@@ -10,6 +10,7 @@ from utils.constants import (
     ITEM_NOT_PROVIDED,
     STUDENT,
     SUBJECT,
+    ITEM_NOT_FOUND_IN_ARRAY,
 )
 from utils.custom_exceptions import SearchException, NotProvided
 from utils.utils import validate_uuid
@@ -54,3 +55,17 @@ def get_items(
     if not_found_ids:
         raise SearchException(NOT_FOUND_BY_ID.format(item_type, not_found_ids))
     return items
+
+
+def remove_items_from_entity(
+    entity_items, entity_type, entity_id, items, item_type
+):
+    for item in items:
+        if item in entity_items:
+            entity_items.remove(item)
+        else:
+            raise SearchException(
+                ITEM_NOT_FOUND_IN_ARRAY.format(
+                    item_type, item.id, entity_type, entity_id
+                )
+            )
