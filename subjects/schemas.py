@@ -1,15 +1,18 @@
 from marshmallow import EXCLUDE, validates, ValidationError
 from application.ma import ma
-from subjects.models import SubjectModel
+from subjects import models as subject_models
 
 
 class SubjectSchema(ma.SQLAlchemyAutoSchema):
     teachers = ma.Nested("TeacherSchema", many=True, exclude=("subjects",))
     specialties = ma.Nested("SpecialtySchema", many=True)
     groups = ma.Nested("GroupSchema", many=True)
+    assignments = ma.Nested(
+        "AssignmentSchema", many=True, exclude=("subject",)
+    )
 
     class Meta:
-        model = SubjectModel
+        model = subject_models.SubjectModel
         load_instance = True
         unknown = EXCLUDE
         dump_only = ("id", "created_on", "updated_on")

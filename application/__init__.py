@@ -3,7 +3,13 @@ from flask import Flask
 from flask_jwt_extended import JWTManager
 from application.db import db, migrate
 from application.ma import ma
-from application.blacklist import BLACKLIST
+from users import models as user_models
+from positions import models as position_models
+from groups import models as group_models
+from specialties import models as specialty_models
+from subjects import models as subject_models
+from assignments import models as assignment_models
+from auth import models as auth_models
 
 
 def create_app():
@@ -26,8 +32,10 @@ def create_app():
         pass
 
     @jwt.token_in_blocklist_loader
-    def check_if_token_in_blacklist(jwt_headers, jwt_data):
-        return jwt_data["jti"] in BLACKLIST
+    def check_if_token_revoked(jwt_headers, jwt_data):
+        jti = jwt_data["jti"]
+        token = auth_models.TokenBlocklistModel.get_by_jti(jti)
+        return token is not None
 
     @jwt.revoked_token_loader
     def revoked_token_callback(jwt_header, jwt_data):
@@ -36,20 +44,22 @@ def create_app():
         }, 401
 
     register_blueprints(app)
+    # print(app.url_map)
     return app
 
 
 def register_blueprints(app):
-    from users.urls import mod as user_mod
-    from positions.urls import mod as position_mod
-    from groups.urls import mod as group_mod
-    from auth.urls import mod as auth_mod
-    from specialties.urls import mod as specialty_mod
-    from subjects.urls import mod as subject_mod
+    from users import urls as user_urls
+    from subjects import urls as subject_urls
+    from positions import urls as position_urls
+    from groups import urls as group_urls
+    from auth import urls as auth_urls
+    from specialties import urls as specialty_urls
+    from assignments import urls as assignment_urls
 
-    app.register_blueprint(user_mod)
-    app.register_blueprint(position_mod)
-    app.register_blueprint(specialty_mod)
-    app.register_blueprint(subject_mod)
-    app.register_blueprint(group_mod)
-    app.register_blueprint(auth_mod)
+    app.register_blueprint(user_urls.mod)
+    app.register_blueprint(group_urls.mod)
+    app.register_blueprint(specialty_urls.mod)
+    app.register_blueprint(subject_urls.general_mod)
+    app.register_blueprint(auth_urls.mod)
+    app.register_blueprint(assignment_urls.general_mod)

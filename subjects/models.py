@@ -78,6 +78,9 @@ class SubjectModel(BaseModel):
         lazy="subquery",
         backref=db.backref("subjects", lazy=True),
     )
+    assignments = db.relationship(
+        "AssignmentModel", uselist=True, back_populates="subject"
+    )
 
     @classmethod
     def get_by_name_and_year(cls, name, year):

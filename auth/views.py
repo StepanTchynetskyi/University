@@ -8,11 +8,10 @@ from flask_jwt_extended import (
     get_jwt_identity,
 )
 
-from application.blacklist import BLACKLIST
-from auth.schemas import LoginSchema
+from auth import schemas as auth_schemas
 from flask import request
 
-from users.models import UserModel
+from users import models as user_models
 from utils.constants import (
     EMAIL_DOES_NOT_EXISTS,
     EMAIL_NOT_ACTIVE_USER,
@@ -21,7 +20,8 @@ from utils.constants import (
 from utils.custom_exceptions import SearchException, InvalidCredentials
 from utils.utils import check_password
 
-login_schema = LoginSchema()
+login_schema = auth_schemas.LoginSchema()
+token_blocklist_schema = auth_schemas.TokenBlocklistSchema()
 
 
 def login_user() -> Tuple[Dict[str, Any], int]:
@@ -33,13 +33,13 @@ def login_user() -> Tuple[Dict[str, Any], int]:
 
     user_json = request.get_json()
     loaded_user = login_schema.load(user_json)
-    user = UserModel.get_by_email(loaded_user["email"])
+    user = user_models.UserModel.get_by_email(loaded_user["email"])
     if not user:
         raise SearchException(
             EMAIL_DOES_NOT_EXISTS.format(loaded_user["email"])
         )
     if not user.is_active:
-        raise SearchException(EMAIL_NOT_ACTIVE_USER(user.email))
+        raise SearchException(EMAIL_NOT_ACTIVE_USER.format(user.email))
     if not check_password(loaded_user["password"], user.password):
         raise InvalidCredentials(PW_DO_NOT_MATCH)
     access_token = create_access_token(identity=user.id, fresh=True)
@@ -60,7 +60,8 @@ def logout_user() -> Tuple[Dict[str, Any], int]:
     :return: Tuple with a dictionary that contains "status message" and status code
     """
     jti = get_jwt()["jti"]
-    BLACKLIST.add(jti)
+    blocklist_obj = token_blocklist_schema.load({"jti": jti})
+    blocklist_obj.save_to_db()
     return {"message": "Successfully logged out"}, 200
 
 

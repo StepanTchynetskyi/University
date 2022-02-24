@@ -8,3 +8,7 @@ repos:
     rev: v2.3.0
     hooks:
     - id: flake8
+      additional_dependencies:
+          - flake8-cognitive-complexity==0.1.0
+          - cognitive-complexity==1.2.0
+          - flake8-functions

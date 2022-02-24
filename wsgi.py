@@ -2,12 +2,13 @@ import json
 from marshmallow import ValidationError
 from sqlalchemy import exc
 from application import create_app
-from utils.response import BaseResponse
+from utils.schemas.response import BaseResponse
 from utils.custom_exceptions import (
     SearchException,
     CreateException,
     NotProvided,
     InvalidCredentials,
+    UpdateException,
 )
 
 app = create_app()
@@ -50,6 +51,11 @@ def handle_invalid_credentials(err):
     return {"errors": {err.__class__.__name__: str(err)}}, err.status_code
 
 
+@app.errorhandler(UpdateException)
+def handle_update_exception(err):
+    return {"errors": {err.__class__.__name__: str(err)}}, err.status_code
+
+
 @app.errorhandler(ValueError)
 def handle_value_error(err):
     return {"errors": {err.__class__.__name__: str(err)}}, 400
@@ -58,25 +64,20 @@ def handle_value_error(err):
 @app.after_request
 def form_response(response):
     response_json = response.get_json()
-    if response_json:
-        data = response_json.get("data", None)
-        data = data if isinstance(data, list) else [data] if data else []
-        errors = response_json.get("errors", None)
-        errors = (
-            [errors]
-            if isinstance(errors, list)
-            else [errors]
-            if errors
-            else []
-        )
-        message = response_json.get("message", None)
-        message = message if message else response._status
-        processed_response = response_schema.load(
-            {
-                "status": {"message": message, "code": response._status_code},
-                "data": data,
-                "errors": errors,
-            }
-        )
-        response.data = json.dumps(response_schema.dump(processed_response))
+    if not response_json:
+        return response
+    message = response_json.get("message", None)
+    message = message if message else response._status
+    result_json = {
+        "status": {"message": message, "code": response._status_code}
+    }
+    data = response_json.get("data", None)
+    if data:
+        result_json["data"] = data
+    errors = response_json.get("errors", None)
+    if errors:
+        errors = errors if isinstance(errors, list) else [errors]
+        result_json["errors"] = errors
+    processed_response = response_schema.load(result_json)
+    response.data = json.dumps(response_schema.dump(processed_response))
     return response

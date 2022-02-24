@@ -1,10 +1,6 @@
 from marshmallow import EXCLUDE, validates, ValidationError
 from application.ma import ma
-from users.models import (
-    UserModel,
-    StudentModel,
-    TeacherModel,
-)
+from users import models as user_models
 from utils.constants import (
     HAS_UPPERCASE_LETTERS,
     HAS_LOWERCASE_LETTERS,
@@ -59,7 +55,7 @@ class UserValidation:
 
 class UserSchema(ma.SQLAlchemyAutoSchema, UserValidation):
     class Meta:
-        model = UserModel
+        model = user_models.UserModel
         load_instance = True
         unknown = EXCLUDE
         load_only = ("password",)
@@ -70,7 +66,7 @@ class StudentSchema(ma.SQLAlchemyAutoSchema, UserValidation):
     groups = ma.Nested("GroupSchema", many=True)
 
     class Meta:
-        model = StudentModel
+        model = user_models.StudentModel
         load_instance = True
         unknown = EXCLUDE
         include_fk = True
@@ -92,7 +88,7 @@ class TeacherSchema(ma.SQLAlchemyAutoSchema, UserValidation):
     subjects = ma.Nested("SubjectSchema", many=True, exclude=("teachers",))
 
     class Meta:
-        model = TeacherModel
+        model = user_models.TeacherModel
         load_instance = True
         unknown = EXCLUDE
         include_fk = True

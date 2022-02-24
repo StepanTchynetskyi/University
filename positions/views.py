@@ -1,7 +1,7 @@
 from flask import request
 
-from positions.models import PositionModel
-from positions.schemas import PositionSchema
+from positions import models as position_models
+from positions import schemas as position_schemas
 from utils.constants import (
     CREATED_SUCCESSFULLY,
     NOT_FOUND_BY_ID,
@@ -11,12 +11,12 @@ from utils.constants import (
     ALREADY_EXISTS,
 )
 
-position_schema = PositionSchema()
+position_schema = position_schemas.PositionSchema()
 
 
 def create_position():
     position_json = request.get_json()
-    position = PositionModel.get_by_position_name(
+    position = position_models.PositionModel.get_by_position_name(
         str(position_json.get("position_name", None))
     )
     if position:
@@ -35,26 +35,28 @@ def create_position():
 def get_positions():
     positions = [
         position_schema.dump(position)
-        for position in PositionModel.get_all_records()
+        for position in position_models.PositionModel.get_all_records()
     ]
-    return {"data": positions}, 200
+    return {"data": {"positions": positions}}, 200
 
 
 def get_position(position_id):
-    position = PositionModel.get_by_id(position_id)
+    position = position_models.PositionModel.get_by_id(position_id)
     if not position:
         return {"message": NOT_FOUND_BY_ID.format(POSITION, position_id)}, 400
     return {"data": position_schema.dump(position)}, 200
 
 
 def update_position(position_id):
-    position = PositionModel.get_by_id(position_id)
+    position = position_models.PositionModel.get_by_id(position_id)
     if not position:
         return {"message": NOT_FOUND_BY_ID.format(POSITION, position_id)}, 400
     position_json = request.get_json()
     position_name = position_json.get("position_name", None)
     if position_name:
-        position_obj = PositionModel.get_by_position_name(str(position_name))
+        position_obj = position_models.PositionModel.get_by_position_name(
+            str(position_name)
+        )
         if position_obj:
             return {
                 "message": ALREADY_EXISTS.format(
@@ -73,7 +75,7 @@ def update_position(position_id):
 
 
 def delete_position(position_id):
-    position = PositionModel.get_by_id(position_id)
+    position = position_models.PositionModel.get_by_id(position_id)
     if not position:
         return {"message": NOT_FOUND_BY_ID.format(POSITION, position_id)}, 400
     position.remove_from_db()

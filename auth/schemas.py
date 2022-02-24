@@ -1,5 +1,7 @@
-from marshmallow import Schema, fields, validates, ValidationError
+from marshmallow import EXCLUDE, Schema, fields, validates, ValidationError
 
+from application.ma import ma
+from auth import models as auth_models
 from utils.constants import VALIDATE_EMAIL
 
 
@@ -20,3 +22,11 @@ class LoginSchema(Schema):
     def validate_password(self, value):
         if len(value) < 8:
             raise ValidationError("Too short password(min 8 symbols)")
+
+
+class TokenBlocklistSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = auth_models.TokenBlocklistModel
+        load_instance = True
+        unknown = EXCLUDE
+        dump_only = "created_on"

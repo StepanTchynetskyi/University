@@ -1,7 +1,7 @@
 from functools import wraps
 
-from positions.models import PositionModel
-from users.models import UserModel
+from positions import models as position_models
+from users import models as user_models
 from utils.constants import (
     ALREADY_EXISTS,
     PW_DO_NOT_MATCH,
@@ -18,26 +18,27 @@ def process_user_json(user_schema, user_type, request):
         def wrapper():
             user_json = request.get_json()
             user = user_schema.load(user_json)
-            user_obj = UserModel.get_by_email(user_json.get("email", None))
+            user_obj = user_models.UserModel.get_by_email(
+                user_json.get("email", None)
+            )
             if user_obj:
                 raise CreateException(
                     ALREADY_EXISTS.format(user_type, user_obj.email)
                 )
             if user_json["password"] != user_json.get("password1", None):
                 raise CreateException(PW_DO_NOT_MATCH)
-            else:
-                position_id = request.get_json().get("position_id", None)
-                if position_id:
-                    position = PositionModel.get_by_id(position_id)
-                    if not position:
-                        raise SearchException(
-                            DOES_NOT_EXIST.format(POSITION, position_id),
-                            status_code=400,
-                        )
-                user.password = get_hashed_password(
-                    user.password.encode("utf8")
-                ).decode("utf-8")
-                user.save_to_db()
+            position_id = request.get_json().get("position_id", None)
+            if position_id:
+                position = position_models.PositionModel.get_by_id(position_id)
+                if not position:
+                    raise SearchException(
+                        DOES_NOT_EXIST.format(POSITION, position_id),
+                        status_code=400,
+                    )
+            user.password = get_hashed_password(
+                user.password.encode("utf8")
+            ).decode("utf-8")
+            user.save_to_db()
             return func(user)
 
         return wrapper

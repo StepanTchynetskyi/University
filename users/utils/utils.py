@@ -2,9 +2,9 @@ from typing import Union, List, Dict, Type
 from uuid import UUID
 from flask.wrappers import Request
 
-from subjects.models import SubjectModel
-from users.models import StudentModel, TeacherModel
-from users.schemas import StudentSchema, TeacherSchema
+from subjects import models as subject_models
+from users import models as user_models
+from users import schemas as user_schemas
 from utils.constants import (
     NOT_FOUND_BY_ID,
     ITEM_NOT_PROVIDED,
@@ -13,12 +13,13 @@ from utils.constants import (
     ITEM_NOT_FOUND_IN_ARRAY,
 )
 from utils.custom_exceptions import SearchException, NotProvided
-from utils.utils import validate_uuid
 
 
 def update_specific_user(
-    specific_user: Union[StudentModel, TeacherModel],
-    specific_schema: Union[StudentSchema, TeacherSchema],
+    specific_user: Union[user_models.StudentModel, user_models.TeacherModel],
+    specific_schema: Union[
+        user_schemas.StudentSchema, user_schemas.TeacherSchema
+    ],
     request: Request,
 ) -> Dict:
     """Updates specific user(Student or Teacher)
@@ -42,16 +43,14 @@ def update_specific_user(
 def get_items(
     item_type: Union[STUDENT, SUBJECT],
     item_ids: List[UUID],
-    item_model: Union[Type[StudentModel], Type[SubjectModel]],
-) -> List[Union[StudentModel, SubjectModel]]:
-    if not item_ids:
-        raise NotProvided(ITEM_NOT_PROVIDED.format(item_type))
-    for uuid_ in item_ids:
-        validate_uuid(uuid_)
+    item_model: Union[
+        Type[user_models.StudentModel], Type[subject_models.SubjectModel]
+    ],
+) -> List[Union[user_models.StudentModel, subject_models.SubjectModel]]:
     items = item_model.get_by_ids(item_ids)
     if not items:
         raise SearchException(NOT_FOUND_BY_ID.format(item_type, item_ids))
-    not_found_ids = [item.id for item in items if str(item.id) not in item_ids]
+    not_found_ids = [item.id for item in items if item.id not in item_ids]
     if not_found_ids:
         raise SearchException(NOT_FOUND_BY_ID.format(item_type, not_found_ids))
     return items

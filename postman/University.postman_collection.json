@@ -1,0 +1,2306 @@
+{
+	"info": {
+		"_postman_id": "210e42ae-5332-4d3d-8e60-e2f7db2d695b",
+		"name": "University",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Students",
+			"item": [
+				{
+					"name": "get_students",
+					"item": [
+						{
+							"name": "all_students",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/users/students",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"students"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get_one_student_success",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/users/students/6b667f65-95a5-47c2-8af7-ace893acc1a1",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"students",
+										"6b667f65-95a5-47c2-8af7-ace893acc1a1"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get_one_student_wrong_id",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/users/students/77fa6689-b282-446f-9174-deecd84014f1",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"students",
+										"77fa6689-b282-446f-9174-deecd84014f1"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "create_students",
+					"item": [
+						{
+							"name": "create_student_success",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"email\": \"studentw@gmail.com\",\n    \"first_name\": \"stud\",\n    \"last_name\": \"student1\",\n    \"password\": \"Awnafjfawga12@\",\n    \"password1\": \"Awnafjfawga12@\",\n    \"age\": 1000,\n    \"year_of_study\": 1000\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/users/students/create",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"students",
+										"create"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "create_student_fail_email_already_exists",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"email\": \"stud1@gmail.com\",\n    \"first_name\": \"stud\",\n    \"last_name\": \"student1\",\n    \"password\": \"Awnafjfawga12@\",\n    \"password1\": \"Awnafjfawga12@\",\n    \"age\": 10,\n    \"year_of_study\": 2\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/users/students/create",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"students",
+										"create"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "create_student_fail_password1_not_provided",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"email\": \"stud2@gmail.com\",\n    \"first_name\": \"stud\",\n    \"last_name\": \"student1\",\n    \"password\": \"Awnafjfawga12@\",\n    \"age\": 10,\n    \"year_of_study\": 2\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/users/students/create",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"students",
+										"create"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "create_student_fail_password1_not_equal_to_password",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"email\": \"stud2@gmail.com\",\n    \"first_name\": \"stud\",\n    \"last_name\": \"student1\",\n    \"password\": \"Awnafjfawga12@\",\n    \"password1\": \"fwnafjfawg1\",\n    \"age\": 10,\n    \"year_of_study\": 2\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/users/students/create",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"students",
+										"create"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "create_student_fail_missing_email",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"first_name\": \"stud\",\n    \"last_name\": \"student1\",\n    \"password\": \"Awnafjfawga12@\",\n    \"password1\": \"Awnafjfawga12@\",\n    \"age\": 10,\n    \"year_of_study\": 2\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/users/students/create",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"students",
+										"create"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "create_student_fail_missing_email_and_last_name",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"first_name\": \"stud\",\n    \"password\": \"Awnafjfawga12@\",\n    \"password1\": \"Awnafjfawga12@\",\n    \"age\": 10,\n    \"year_of_study\": 2\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/users/students/create",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"students",
+										"create"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "update_students",
+					"item": [
+						{
+							"name": "update_student_success_year_of_study",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{jwt_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"first_name\": \"studentik\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/users/students/2ccf5706-e9db-4bf3-877a-097df6fde92c",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"students",
+										"2ccf5706-e9db-4bf3-877a-097df6fde92c"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "update_student_success_year_of_study_first_name_id_not_affect",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"year_of_study\": 1,\n    \"id\": \"77fa6689-b282-446f-9174-deecd84014f2\",\n    \"user\": {\n        \"first_name\": \"dawfagawga\"\n    }\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/users/students/ad70533b-eda6-43cc-95f0-972584ecedb7",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"students",
+										"ad70533b-eda6-43cc-95f0-972584ecedb7"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "update_student_fail_age_type",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"year_of_study\": 2,\n    \"user\": {\n        \"first_name\": \"dawfagawga\",\n        \"age\": 18\n    }\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/users/students/ad70533b-eda6-43cc-95f0-972584ecedb7",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"students",
+										"ad70533b-eda6-43cc-95f0-972584ecedb7"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get_updated_student",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/users/students/c3cbb303-3777-4602-92f4-afc82304bed4",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"students",
+										"c3cbb303-3777-4602-92f4-afc82304bed4"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Delete_students",
+					"item": [
+						{
+							"name": "delete_student_success",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/users/students/8d8c1d3b-3a83-4dc1-80dd-8ea812feb921/hard_delete",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"students",
+										"8d8c1d3b-3a83-4dc1-80dd-8ea812feb921",
+										"hard_delete"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "delete_student_fail_wrong_id",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/users/students/edf4a163-5cca-4d59-b346-4bb086f026e3",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"students",
+										"edf4a163-5cca-4d59-b346-4bb086f026e3"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "soft_delete",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/users/students/88d25b82-3046-44fe-ba97-48616e1de126",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"students",
+										"88d25b82-3046-44fe-ba97-48616e1de126"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get_deleted_user",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/users/students/edf4a163-5cca-4d59-b346-4bb086f026e3",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"students",
+										"edf4a163-5cca-4d59-b346-4bb086f026e3"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Positions",
+			"item": [
+				{
+					"name": "get_postions",
+					"item": [
+						{
+							"name": "get_all_positions",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/users/teachers/positions",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"teachers",
+										"positions"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get_position_success",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/users/teachers/positions/f5126d12-1098-4b1b-85ed-c4cdec0b659d",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"teachers",
+										"positions",
+										"f5126d12-1098-4b1b-85ed-c4cdec0b659d"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get_position_wrong_id",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/users/teachers/positions/56604530-b8f8-40d0-9366-e6307e760ef1",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"teachers",
+										"positions",
+										"56604530-b8f8-40d0-9366-e6307e760ef1"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "create_position",
+					"item": [
+						{
+							"name": "create_position_success",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"position_name\": \"Teacher\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/users/teachers/positions/create",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"teachers",
+										"positions",
+										"create"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "create_position_fail_without_position_name",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"wrong_field\": 12\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/users/teachers/positions/create",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"teachers",
+										"positions",
+										"create"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "create_position_fail_wrong_type_for_position_name",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"position_name\": 12\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/users/teachers/positions/create",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"teachers",
+										"positions",
+										"create"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "create_position_fail_position_name_too_long_string",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"position_name\":{{long_string}}\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/users/teachers/positions/create",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"teachers",
+										"positions",
+										"create"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "create_position_fail_position_name_already_exists",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"position_name\": \"Proffessor\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/users/teachers/positions/create",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"teachers",
+										"positions",
+										"create"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get_created_position",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/users/teachers/positions/483bd77d-47bd-42b9-974d-57a0897f7bc8",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"teachers",
+										"positions",
+										"483bd77d-47bd-42b9-974d-57a0897f7bc8"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "update_position",
+					"item": [
+						{
+							"name": "update_position_success_empty?",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"position_name\": \"Teacher1\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/users/teachers/positions/72266681-f7fa-484a-9aa1-d6fa5f46db97",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"teachers",
+										"positions",
+										"72266681-f7fa-484a-9aa1-d6fa5f46db97"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "update_position_success",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"position_name\": \"Professor\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/users/teachers/positions/4531f5da-1e25-4b24-8b1a-d6751a70e5b2",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"teachers",
+										"positions",
+										"4531f5da-1e25-4b24-8b1a-d6751a70e5b2"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "update_position_fail_position_name_too_long",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"position_name\": {{long_string}}\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/users/teachers/positions/4531f5da-1e25-4b24-8b1a-d6751a70e5b2",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"teachers",
+										"positions",
+										"4531f5da-1e25-4b24-8b1a-d6751a70e5b2"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "update_position_fail_position_name_wrong_type",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"position_name\": 12\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/users/teachers/positions/4531f5da-1e25-4b24-8b1a-d6751a70e5b2",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"teachers",
+										"positions",
+										"4531f5da-1e25-4b24-8b1a-d6751a70e5b2"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get_updated_position",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/users/teachers/positions/4531f5da-1e25-4b24-8b1a-d6751a70e5b2",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"teachers",
+										"positions",
+										"4531f5da-1e25-4b24-8b1a-d6751a70e5b2"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "delete_position",
+					"item": [
+						{
+							"name": "delete_position_success",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/users/teachers/positions/4531f5da-1e25-4b24-8b1a-d6751a70e5b2",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"teachers",
+										"positions",
+										"4531f5da-1e25-4b24-8b1a-d6751a70e5b2"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "delete_position_wrong_id",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/users/teachers/positions/56604530-b8f8-40d0-9366-e6307e760ef1",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"teachers",
+										"positions",
+										"56604530-b8f8-40d0-9366-e6307e760ef1"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get_deleted_position",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/users/teachers/positions/4531f5da-1e25-4b24-8b1a-d6751a70e5b2",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"teachers",
+										"positions",
+										"4531f5da-1e25-4b24-8b1a-d6751a70e5b2"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Teachers",
+			"item": [
+				{
+					"name": "create_teacher",
+					"item": [
+						{
+							"name": "create_teacher_success",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"email\": \"teacherw@gmail.com\",\n    \"first_name\": \"stud\",\n    \"last_name\": \"student1\",\n    \"password\": \"Afwnafjfawga2@\",\n    \"password1\": \"Afwnafjfawga2@\",\n    \"age\": 10,\n    \"position_id\": \"4275c27a-190f-4c47-a2d8-03f459f556ad\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/users/teachers/create",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"teachers",
+										"create"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "create_teacher_success_docker",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"email\": \"stud7@gmail.com\",\n    \"first_name\": \"stud\",\n    \"last_name\": \"student1\",\n    \"password\": \"fwnafjfawga\",\n    \"password1\": \"fwnafjfawga\",\n    \"age\": 10,\n    \"position_id\": \"f5126d12-1098-4b1b-85ed-c4cdec0b659d\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://172.18.0.3:5000/users/teachers/create",
+									"protocol": "http",
+									"host": [
+										"172",
+										"18",
+										"0",
+										"3"
+									],
+									"port": "5000",
+									"path": [
+										"users",
+										"teachers",
+										"create"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "create_teacher_fail_email_already_exists",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"email\": \"stud72@gmail.com\",\n    \"first_name\": \"stud\",\n    \"last_name\": \"student1\",\n    \"password\": \"fwnafjfawga\",\n    \"password1\": \"fwnafjfawga\",\n    \"age\": 10,\n    \"is_active\": true,\n    \"position_id\": \"f5126d12-1098-4b1b-85ed-c4cdec0b659d\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/users/teachers/create",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"teachers",
+										"create"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "create_teacher_fail_wrong_position_id",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"email\": \"stud9@gmail.com\",\n    \"first_name\": \"stud\",\n    \"last_name\": \"student1\",\n    \"password\": \"fwnafjfawgaA2@\",\n    \"password1\": \"fwnafjfawgaA2@\",\n    \"age\": 10,\n    \"is_active\": true,\n    \"position_id\": \"f5126d12-1098-4b1b-85ed-c4cdec0b6591\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/users/teachers/create",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"teachers",
+										"create"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "create_teacher_fail_different_passwords",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"email\": \"stud7@gmail.com\",\n    \"first_name\": \"stud\",\n    \"last_name\": \"student1\",\n    \"password\": \"fwnafjfawgaA2@\",\n    \"password1\": \"fwnafjfawgaA2@2\",\n    \"age\": 10,\n    \"is_active\": true,\n    \"position_id\": \"f5126d12-1098-4b1b-85ed-c4cdec0b659d\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/users/teachers/create",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"teachers",
+										"create"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "create_teacher_fail_too_big_string",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"email\": \"stud10@gmail.com\",\n    \"first_name\": {{long_string}},\n    \"last_name\": \"student1\",\n    \"password\": \"fwnafjfawgaA2@\",\n    \"password1\": \"fwnafjfawgaA2@\",\n    \"age\": 10,\n    \"is_active\": true,\n    \"position_id\": \"f5126d12-1098-4b1b-85ed-c4cdec0b659d\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/users/teachers/create",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"teachers",
+										"create"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "create_teacher_fail_too_big_integer",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"email\": \"stud9@gmail.com\",\n    \"first_name\": \"stud\",\n    \"last_name\": \"student1\",\n    \"password\": \"fwnafjfawgaA2@\",\n    \"password1\": \"fwnafjfawgaA2@\",\n    \"age\": 41764178651769,\n    \"is_active\": true,\n    \"position_id\": \"f5126d12-1098-4b1b-85ed-c4cdec0b659d\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/users/teachers/create",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"teachers",
+										"create"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "create_teacher_fail_without_position_id",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"email\": \"stud8@gmail.com\",\n    \"first_name\": \"stud\",\n    \"last_name\": \"student1\",\n    \"password\": \"fwnafjfawgaA2@\",\n    \"password1\": \"fwnafjfawgaA2@\",\n    \"age\": 10,\n    \"is_active\": true\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/users/teachers/create",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"teachers",
+										"create"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "get_teacher",
+					"item": [
+						{
+							"name": "get_teachers",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/users/teachers",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"teachers"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get_teacher_success",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/users/teachers/e8c3792c-3db1-4a5a-8850-c36c4df8b2df",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"teachers",
+										"e8c3792c-3db1-4a5a-8850-c36c4df8b2df"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get_teacher_fail_wrong_id",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/users/teachers/24d3df35-1e6b-4479-9c91-dd9b43e0bf56",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"teachers",
+										"24d3df35-1e6b-4479-9c91-dd9b43e0bf56"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "update_teacher",
+					"item": [
+						{
+							"name": "update_user_success",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"position_id\": \"ae0a2aa3-2253-4762-8b64-780e32eb71c4\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/users/teachers/47a5ca9a-9b32-468b-a2f3-4ce8ad983a80",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"teachers",
+										"47a5ca9a-9b32-468b-a2f3-4ce8ad983a80"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "update_user_success_last_name",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"user\": {\n        \"last_name\": \"teacher_last_name\"\n    }\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/users/teachers/47a5ca9a-9b32-468b-a2f3-4ce8ad983a80",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"teachers",
+										"47a5ca9a-9b32-468b-a2f3-4ce8ad983a80"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "update_user_fail_age",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"user\": {\n        \"age\": \"teacher_last_name\"\n    }\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/users/teachers/47a5ca9a-9b32-468b-a2f3-4ce8ad983a80",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"teachers",
+										"47a5ca9a-9b32-468b-a2f3-4ce8ad983a80"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get_updated_user",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"position_id\": \"ae0a2aa3-2253-4762-8b64-780e32eb71c4\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/users/teachers/47a5ca9a-9b32-468b-a2f3-4ce8ad983a80",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"teachers",
+										"47a5ca9a-9b32-468b-a2f3-4ce8ad983a80"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "remove_teacher",
+					"item": [
+						{
+							"name": "delete_teacher_soft_success",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/users/teachers/a1d6dd68-9c57-4817-9b2d-aff6c3f12f05",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"teachers",
+										"a1d6dd68-9c57-4817-9b2d-aff6c3f12f05"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "delete_teacher_hard_delete_success",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/users/teachers/dbd4a607-26d3-44be-ba58-0af8fd6c8c68/hard_delete",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"teachers",
+										"dbd4a607-26d3-44be-ba58-0af8fd6c8c68",
+										"hard_delete"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "delete_teacher_fail_wrong_id",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/users/teachers/47a5ca9a-9b32-468b-a2f3-4ce8ad983a80",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"teachers",
+										"47a5ca9a-9b32-468b-a2f3-4ce8ad983a80"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "many_to_many",
+					"item": [
+						{
+							"name": "add_subject",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/users/teachers/e8c3792c-3db1-4a5a-8850-c36c4df8b2df/appoint-subjects/6d9e1fbf-ebfa-4e31-a914-cab625eb8288",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"teachers",
+										"e8c3792c-3db1-4a5a-8850-c36c4df8b2df",
+										"appoint-subjects",
+										"6d9e1fbf-ebfa-4e31-a914-cab625eb8288"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "delete_subject",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/users/teachers/e8c3792c-3db1-4a5a-8850-c36c4df8b2df/disappoint-subject/6d9e1fbf-ebfa-4e31-a914-cab625eb8288",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"teachers",
+										"e8c3792c-3db1-4a5a-8850-c36c4df8b2df",
+										"disappoint-subject",
+										"6d9e1fbf-ebfa-4e31-a914-cab625eb8288"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "add_subjects_fail_empty_array",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"subject_ids\": []\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/users/teachers/e8c3792c-3db1-4a5a-8850-c36c4df8b2df/appoint-subjects-to-teacher",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"teachers",
+										"e8c3792c-3db1-4a5a-8850-c36c4df8b2df",
+										"appoint-subjects-to-teacher"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "add_subjects_fail_wrong_ids",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"subject_ids\": [\"f3cc04dd-52de-458b-8e9b-e797ee2014a9\", \"f5126d12-1098-4b1b-85ed-c4cdec0b659a\"]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/users/teachers/e8c3792c-3db1-4a5a-8850-c36c4df8b2df/appoint-subjects-to-teacher",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"teachers",
+										"e8c3792c-3db1-4a5a-8850-c36c4df8b2df",
+										"appoint-subjects-to-teacher"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "add_subjects_fail_wrong_ids Copy",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"subjects\": []\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/users/teachers/a1d6dd68-9c57-4817-9b2d-aff6c3f12f05/appoint-subjects-to-teacher",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"teachers",
+										"a1d6dd68-9c57-4817-9b2d-aff6c3f12f05",
+										"appoint-subjects-to-teacher"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "add_subjects_success",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"subject_ids\": [\"6d9e1fbf-ebfa-4e31-a914-cab625eb8288\", \"f3cc04dd-52de-458b-8e9b-e797ee2014a9\"]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/users/teachers/d6f35d88-4bbb-4ded-b344-c420617d9811/appoint-subjects-to-teacher",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"teachers",
+										"d6f35d88-4bbb-4ded-b344-c420617d9811",
+										"appoint-subjects-to-teacher"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "delete_subjects_success",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"subject_ids\": [\"6d9e1fbf-ebfa-4e31-a914-cab625eb8288\"]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/users/teachers/e8c3792c-3db1-4a5a-8850-c36c4df8b2df/disappoint-subjects-from-teacher",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"teachers",
+										"e8c3792c-3db1-4a5a-8850-c36c4df8b2df",
+										"disappoint-subjects-from-teacher"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "add_subjects_fail_no_subjects",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n   \n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/users/teachers/a1d6dd68-9c57-4817-9b2d-aff6c3f12f05/appoint-subjects-to-teacher",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"teachers",
+										"a1d6dd68-9c57-4817-9b2d-aff6c3f12f05",
+										"appoint-subjects-to-teacher"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "add_student_to_group",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"student_ids\": [\"48784987-e0d6-455f-9138-added27abe1b\"]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/users/teachers/e8c3792c-3db1-4a5a-8850-c36c4df8b2df/appoint-student-to-group/groups/4013c339-3d53-4a8f-a937-4faee5380ca4",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"teachers",
+										"e8c3792c-3db1-4a5a-8850-c36c4df8b2df",
+										"appoint-student-to-group",
+										"groups",
+										"4013c339-3d53-4a8f-a937-4faee5380ca4"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "delete_student_to_group",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"student_ids\": [\"48784987-e0d6-455f-9138-added27abe1b\"]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/users/teachers/e8c3792c-3db1-4a5a-8850-c36c4df8b2df/disappoint-student-from-group/groups/4013c339-3d53-4a8f-a937-4faee5380ca4",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"teachers",
+										"e8c3792c-3db1-4a5a-8850-c36c4df8b2df",
+										"disappoint-student-from-group",
+										"groups",
+										"4013c339-3d53-4a8f-a937-4faee5380ca4"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "add_subject_to_specialty",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"subject_ids\": [\"6d9e1fbf-ebfa-4e31-a914-cab625eb8288\", \"f3cc04dd-52de-458b-8e9b-e797ee2014a9\"]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/users/teachers/cbb9cc7f-5448-437d-b3b7-3824312b8e1e/appoint-subjects-to-specialty/specialties/5c4b5eb8-aee6-4c63-b931-e8967bc992f9",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"teachers",
+										"cbb9cc7f-5448-437d-b3b7-3824312b8e1e",
+										"appoint-subjects-to-specialty",
+										"specialties",
+										"5c4b5eb8-aee6-4c63-b931-e8967bc992f9"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "delete_subject_from_specialty",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"subject_ids\": [\"6d9e1fbf-ebfa-4e31-a914-cab625eb8288\"]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/users/teachers/cbb9cc7f-5448-437d-b3b7-3824312b8e1e/disappoint-subjects-from-specialty/specialties/5c4b5eb8-aee6-4c63-b931-e8967bc992f9",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"teachers",
+										"cbb9cc7f-5448-437d-b3b7-3824312b8e1e",
+										"disappoint-subjects-from-specialty",
+										"specialties",
+										"5c4b5eb8-aee6-4c63-b931-e8967bc992f9"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "add_subject_to_group",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"subject_ids\": [\"6d9e1fbf-ebfa-4e31-a914-cab625eb8288\", \"f3cc04dd-52de-458b-8e9b-e797ee2014a9\"]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/users/teachers/e8c3792c-3db1-4a5a-8850-c36c4df8b2df/appoint-subject-to-group/groups/4013c339-3d53-4a8f-a937-4faee5380ca4",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"teachers",
+										"e8c3792c-3db1-4a5a-8850-c36c4df8b2df",
+										"appoint-subject-to-group",
+										"groups",
+										"4013c339-3d53-4a8f-a937-4faee5380ca4"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "delete_subject_from_group",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"subject_ids\": [\"6d9e1fbf-ebfa-4e31-a914-cab625eb8288\"]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/users/teachers/e8c3792c-3db1-4a5a-8850-c36c4df8b2df/disappoint-subjects-from-group/groups/4013c339-3d53-4a8f-a937-4faee5380ca4",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"teachers",
+										"e8c3792c-3db1-4a5a-8850-c36c4df8b2df",
+										"disappoint-subjects-from-group",
+										"groups",
+										"4013c339-3d53-4a8f-a937-4faee5380ca4"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Specialty",
+			"item": [
+				{
+					"name": "get_specialty",
+					"item": [
+						{
+							"name": "get_specialties_success",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/specialties",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"specialties"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "create_specialty",
+					"item": [
+						{
+							"name": "create_specialty_success",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\" : \"Computer Science2\",\n    \"year\" : \"2022\",\n    \"teacher_id\": \"cbb9cc7f-5448-437d-b3b7-3824312b8e1e\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/specialties/create",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"specialties",
+										"create"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Subjects",
+			"item": [
+				{
+					"name": "create_subject",
+					"item": [
+						{
+							"name": "create_subject_success",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"Math4\",\n    \"year\": 2023,\n    \"credits\": 6\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/users/teachers/e8c3792c-3db1-4a5a-8850-c36c4df8b2df/subjects/create",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"teachers",
+										"e8c3792c-3db1-4a5a-8850-c36c4df8b2df",
+										"subjects",
+										"create"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "get_subject",
+					"item": [
+						{
+							"name": "get_subject_success",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/users/teachers/e8c3792c-3db1-4a5a-8850-c36c4df8b2df/subjects/a3e72334-ccf5-4582-aa0f-641d2fbfbf69",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"teachers",
+										"e8c3792c-3db1-4a5a-8850-c36c4df8b2df",
+										"subjects",
+										"a3e72334-ccf5-4582-aa0f-641d2fbfbf69"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get_subjects_success",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/subjects",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"subjects"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get_subjects_success Copy",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/users/teachers/e8c3792c-3db1-4a5a-8850-c36c4df8b2df/subjects",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"users",
+										"teachers",
+										"e8c3792c-3db1-4a5a-8850-c36c4df8b2df",
+										"subjects"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Groups",
+			"item": [
+				{
+					"name": "create_group",
+					"item": [
+						{
+							"name": "create_group_success",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"SA-42\",\n    \"year\": 2021,\n    \"credits_per_student\": 36,\n    \"curator_id\": \"e8c3792c-3db1-4a5a-8850-c36c4df8b2df\",\n    \"specialty_id\": \"5c4b5eb8-aee6-4c63-b931-e8967bc992f9\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/groups/create",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"groups",
+										"create"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "get_group",
+					"item": [
+						{
+							"name": "get_group_success",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/groups/4013c339-3d53-4a8f-a937-4faee5380ca4",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"groups",
+										"4013c339-3d53-4a8f-a937-4faee5380ca4"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get_groups_success",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/groups",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"groups"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "login",
+					"item": [
+						{
+							"name": "login_success",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const response = pm.response.json();",
+											"pm.environment.set(\"jwt_token\", response.data.access_token);"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"email\": \"stud7113@gmail.com\",\n    \"password\": \"Afwnafjfawga2@\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/auth/login",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"auth",
+										"login"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "logout",
+					"item": [
+						{
+							"name": "logout",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{jwt_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"warning": "This is a duplicate header and will be overridden by the Authorization header generated by Postman.",
+										"key": "Authorization",
+										"value": "",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/auth/logout",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"auth",
+										"logout"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Assignments",
+			"item": [
+				{
+					"name": "get_assignments",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/subjects/6d9e1fbf-ebfa-4e31-a914-cab625eb8288/assignments",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"subjects",
+								"6d9e1fbf-ebfa-4e31-a914-cab625eb8288",
+								"assignments"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "create_assignment",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"task1\",\n    \"max_mark\": 10,\n    \"deadline\": \"2022-02-19 09:23:29\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/users/teachers/34f817bd-2428-4bcd-9e5a-15add32bd8c6/subjects/6d9e1fbf-ebfa-4e31-a914-cab625eb8288/assignments/create",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"teachers",
+								"34f817bd-2428-4bcd-9e5a-15add32bd8c6",
+								"subjects",
+								"6d9e1fbf-ebfa-4e31-a914-cab625eb8288",
+								"assignments",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get_assignment",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/subjects/6d9e1fbf-ebfa-4e31-a914-cab625eb8288/assignments/a0b363d9-5334-45da-8a89-29dc947e5497",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"subjects",
+								"6d9e1fbf-ebfa-4e31-a914-cab625eb8288",
+								"assignments",
+								"a0b363d9-5334-45da-8a89-29dc947e5497"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update_assignment",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"task2\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/users/teachers/34f817bd-2428-4bcd-9e5a-15add32bd8c6/subjects/6d9e1fbf-ebfa-4e31-a914-cab625eb8288/assignments/a0b363d9-5334-45da-8a89-29dc947e5497",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"teachers",
+								"34f817bd-2428-4bcd-9e5a-15add32bd8c6",
+								"subjects",
+								"6d9e1fbf-ebfa-4e31-a914-cab625eb8288",
+								"assignments",
+								"a0b363d9-5334-45da-8a89-29dc947e5497"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete_assignment",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/users/teachers/34f817bd-2428-4bcd-9e5a-15add32bd8c6/subjects/6d9e1fbf-ebfa-4e31-a914-cab625eb8288/assignments/a0b363d9-5334-45da-8a89-29dc947e5497",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"teachers",
+								"34f817bd-2428-4bcd-9e5a-15add32bd8c6",
+								"subjects",
+								"6d9e1fbf-ebfa-4e31-a914-cab625eb8288",
+								"assignments",
+								"a0b363d9-5334-45da-8a89-29dc947e5497"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{jwt_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://127.0.0.1:5000",
+			"type": "string"
+		},
+		{
+			"key": "id",
+			"value": "77fa6689-b282-446f-9174-deecd84014f9",
+			"type": "string"
+		},
+		{
+			"key": "long_string",
+			"value": "\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"",
+			"type": "string"
+		},
+		{
+			"key": "jwt_token",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

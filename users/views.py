@@ -3,21 +3,15 @@ from uuid import UUID
 
 from flask import request
 from flask_jwt_extended import jwt_required
-from subjects.models import SubjectModel
-from groups.models import GroupModel
-from specialties.models import SpecialtyModel
-from groups.schemas import GroupSchema
-from specialties.schemas import SpecialtySchema
-from users.schemas import (
-    UserSchema,
-    StudentSchema,
-    TeacherSchema,
-)
-from positions.models import PositionModel
-from users.models import (
-    StudentModel,
-    TeacherModel,
-)
+from subjects import models as subject_models
+from groups import models as group_models
+from specialties import models as specialty_models
+from groups import schemas as group_schemas
+from specialties import schemas as specialty_schemas
+from users import schemas as user_schemas
+from positions import models as position_models
+from users import models as user_models
+from assignments import schemas
 from utils.custom_decorators import (
     find_active_user,
 )
@@ -34,16 +28,14 @@ from utils.constants import (
     GROUP,
     SPECIALTY,
     NOT_FOUND_BY_ID,
-    DATA_NOT_PROVIDED,
     DISAPPOINT_ITEM,
-    ITEM_NOT_FOUND_IN_ARRAY,
 )
+from utils.schemas import uuid_list_validator
 from utils.utils import (
     get_entity_with_teacher,
 )
 from utils.custom_exceptions import (
     SearchException,
-    NotProvided,
 )
 from users.utils.utils import (
     get_items,
@@ -53,15 +45,19 @@ from users.utils.utils import (
 from users.utils.custom_decorators import process_user_json
 
 
-user_schema = UserSchema()
-student_schema = StudentSchema()
-teacher_schema = TeacherSchema()
-group_schema = GroupSchema()
-specialty_schema = SpecialtySchema()
+user_schema = user_schemas.UserSchema()
+student_schema = user_schemas.StudentSchema()
+teacher_schema = user_schemas.TeacherSchema()
+group_schema = group_schemas.GroupSchema()
+specialty_schema = specialty_schemas.SpecialtySchema()
+student_uuid_list_schema = uuid_list_validator.StudentsUuidListSchema()
+subject_uuid_list_schema = uuid_list_validator.SubjectsUuidListSchemas()
 
 
 @process_user_json(student_schema, STUDENT, request)
-def create_student(student: StudentModel) -> Tuple[Dict[str, Any], int]:
+def create_student(
+    student: user_models.StudentModel,
+) -> Tuple[Dict[str, Any], int]:
     """Creates Student account
 
     :param student: an object of existing student,
@@ -85,13 +81,15 @@ def get_students():
     """
     students = [
         student_schema.dump(student)
-        for student in StudentModel.get_all_records()
+        for student in user_models.StudentModel.get_all_records()
     ]
-    return {"data": students}, 200
+    return {"data": {"students": students}}, 200
 
 
-@find_active_user(StudentModel, STUDENT)
-def get_student(student: StudentModel) -> Tuple[Dict[str, Any], int]:
+@find_active_user(STUDENT)
+def get_student(
+    student: user_models.StudentModel,
+) -> Tuple[Dict[str, Any], int]:
     """Shows specific student data
 
     :param student: an object of existing student,
@@ -104,8 +102,10 @@ def get_student(student: StudentModel) -> Tuple[Dict[str, Any], int]:
 
 
 @jwt_required(fresh=True)
-@find_active_user(StudentModel, STUDENT, check_jwt=True)
-def update_student(student: StudentModel) -> Tuple[Dict[str, Any], int]:
+@find_active_user(STUDENT, check_jwt=True)
+def update_student(
+    student: user_models.StudentModel,
+) -> Tuple[Dict[str, Any], int]:
     """Allow the Student to update account
 
     :param student: an object of existing student,
@@ -123,8 +123,10 @@ def update_student(student: StudentModel) -> Tuple[Dict[str, Any], int]:
 
 # TODO: should be deleted or allowed just for admin or user with the specified id
 @jwt_required(fresh=True)
-@find_active_user(StudentModel, STUDENT, check_jwt=True)
-def hard_delete_student(student: StudentModel) -> Tuple[Dict[str, Any], int]:
+@find_active_user(STUDENT, check_jwt=True)
+def hard_delete_student(
+    student: user_models.StudentModel,
+) -> Tuple[Dict[str, Any], int]:
     """Allow the Student to delete account
 
     :param student: an object of existing student,
@@ -137,8 +139,10 @@ def hard_delete_student(student: StudentModel) -> Tuple[Dict[str, Any], int]:
 
 
 @jwt_required(fresh=True)
-@find_active_user(StudentModel, STUDENT, check_jwt=True)
-def soft_delete_student(student: StudentModel) -> Tuple[Dict[str, Any], int]:
+@find_active_user(STUDENT, check_jwt=True)
+def soft_delete_student(
+    student: user_models.StudentModel,
+) -> Tuple[Dict[str, Any], int]:
     """Allow the Student to softly delete account
 
     :param student: an object of existing student,
@@ -152,7 +156,9 @@ def soft_delete_student(student: StudentModel) -> Tuple[Dict[str, Any], int]:
 
 
 @process_user_json(teacher_schema, TEACHER, request)
-def create_teacher(teacher: TeacherModel) -> Tuple[Dict[str, Any], int]:
+def create_teacher(
+    teacher: user_models.TeacherModel,
+) -> Tuple[Dict[str, Any], int]:
     """Creates Teacher account
 
     :param teacher: an object of existing teacher,
@@ -176,13 +182,15 @@ def get_teachers() -> Tuple[Dict[str, Any], int]:
     """
     teachers = [
         teacher_schema.dump(teacher)
-        for teacher in TeacherModel.get_all_records()
+        for teacher in user_models.TeacherModel.get_all_records()
     ]
-    return {"data": teachers}, 200
+    return {"data": {"teachers": teachers}}, 200
 
 
-@find_active_user(TeacherModel, TEACHER)
-def get_teacher(teacher: TeacherModel) -> Tuple[Dict[str, Any], int]:
+@find_active_user(TEACHER)
+def get_teacher(
+    teacher: user_models.TeacherModel,
+) -> Tuple[Dict[str, Any], int]:
     """Shows specific teacher data
 
     :param teacher: an object of existing teacher,
@@ -195,8 +203,10 @@ def get_teacher(teacher: TeacherModel) -> Tuple[Dict[str, Any], int]:
 
 
 @jwt_required(fresh=True)
-@find_active_user(TeacherModel, TEACHER, check_jwt=True)
-def update_teacher(teacher: TeacherModel) -> Tuple[Dict[str, Any], int]:
+@find_active_user(TEACHER, check_jwt=True)
+def update_teacher(
+    teacher: user_models.TeacherModel,
+) -> Tuple[Dict[str, Any], int]:
     """Allow the Teacher to update account
 
     :param teacher: an object of existing teacher,
@@ -207,7 +217,7 @@ def update_teacher(teacher: TeacherModel) -> Tuple[Dict[str, Any], int]:
     """
     position_id = request.get_json().get("position_id", None)
     if position_id:
-        position = PositionModel.get_by_id(position_id)
+        position = position_models.PositionModel.get_by_id(position_id)
         if not position:
             raise SearchException(DOES_NOT_EXIST.format(POSITION, position_id))
     teacher_json = update_specific_user(teacher, teacher_schema, request)
@@ -218,8 +228,10 @@ def update_teacher(teacher: TeacherModel) -> Tuple[Dict[str, Any], int]:
 
 
 @jwt_required(fresh=True)
-@find_active_user(TeacherModel, TEACHER, check_jwt=True)
-def hard_delete_teacher(teacher: TeacherModel) -> Tuple[Dict[str, Any], int]:
+@find_active_user(TEACHER, check_jwt=True)
+def hard_delete_teacher(
+    teacher: user_models.TeacherModel,
+) -> Tuple[Dict[str, Any], int]:
     """Allow the Teacher to delete account
 
     :param teacher: an object of existing teacher,
@@ -232,8 +244,10 @@ def hard_delete_teacher(teacher: TeacherModel) -> Tuple[Dict[str, Any], int]:
 
 
 @jwt_required(fresh=True)
-@find_active_user(TeacherModel, TEACHER, check_jwt=True)
-def soft_delete_teacher(teacher: TeacherModel) -> Tuple[Dict[str, Any], int]:
+@find_active_user(TEACHER, check_jwt=True)
+def soft_delete_teacher(
+    teacher: user_models.TeacherModel,
+) -> Tuple[Dict[str, Any], int]:
     """Allow the Teacher to softly delete account
 
     :param teacher: an object of existing teacher,
@@ -247,9 +261,9 @@ def soft_delete_teacher(teacher: TeacherModel) -> Tuple[Dict[str, Any], int]:
 
 
 @jwt_required()
-@find_active_user(TeacherModel, TEACHER, check_jwt=True)
+@find_active_user(TEACHER, check_jwt=True)
 def appoint_subject_to_teacher(
-    teacher: TeacherModel, subject_id: UUID
+    teacher: user_models.TeacherModel, subject_id: UUID
 ) -> Tuple[Dict[str, Any], int]:
     """Allow the Teacher to appoint specific subjects
 
@@ -261,7 +275,7 @@ def appoint_subject_to_teacher(
     :return: Tuple with a dictionary that contains 'message',
      "data" of the appointed items and status code for the Response
     """
-    subject = SubjectModel.get_by_id(subject_id)
+    subject = subject_models.SubjectModel.get_by_id(subject_id)
     if not subject:
         raise SearchException(
             NOT_FOUND_BY_ID.format(SUBJECT, subject_id), status_code=400
@@ -276,9 +290,9 @@ def appoint_subject_to_teacher(
 
 
 @jwt_required()
-@find_active_user(TeacherModel, TEACHER, check_jwt=True)
+@find_active_user(TEACHER, check_jwt=True)
 def appoint_subjects_to_teacher(
-    teacher: TeacherModel,
+    teacher: user_models.TeacherModel,
 ) -> Tuple[Dict[str, Any], int]:
     """Allow the Teacher to appoint subjects
 
@@ -289,8 +303,8 @@ def appoint_subjects_to_teacher(
      "data" of the appointed items and status code for the Response
     """
     data = request.get_json()
-    subject_ids = data.get("subject_ids", None)
-    subjects = get_items(SUBJECT, subject_ids, SubjectModel)
+    subject_ids = subject_uuid_list_schema.load(data)["subject_ids"]
+    subjects = get_items(SUBJECT, subject_ids, subject_models.SubjectModel)
     teacher.subjects.extend(subjects)
     teacher.save_to_db()
     teacher_json = teacher_schema.dump(teacher)
@@ -301,9 +315,9 @@ def appoint_subjects_to_teacher(
 
 
 @jwt_required()
-@find_active_user(TeacherModel, TEACHER, check_jwt=True)
+@find_active_user(TEACHER, check_jwt=True)
 def appoint_student_to_group(
-    teacher: TeacherModel, group_id: UUID
+    teacher: user_models.TeacherModel, group_id: UUID
 ) -> Tuple[Dict[str, Any], int]:
     """Allow the Curator of group to appoint students
 
@@ -316,11 +330,11 @@ def appoint_student_to_group(
      "data" of the appointed items and status code for the Response
     """
     data = request.get_json()
-    student_ids = data.get("student_ids", None)
-    if not student_ids:
-        raise NotProvided(DATA_NOT_PROVIDED("student_ids"))
-    group = get_entity_with_teacher(teacher, group_id, GroupModel, GROUP)
-    students = get_items(STUDENT, student_ids, StudentModel)
+    student_ids = student_uuid_list_schema.load(data)["student_ids"]
+    group = get_entity_with_teacher(
+        teacher, group_id, group_models.GroupModel, GROUP
+    )
+    students = get_items(STUDENT, student_ids, user_models.StudentModel)
     group.students.extend(students)
     group.save_to_db()
     group_json = group_schema.dump(group)
@@ -331,9 +345,9 @@ def appoint_student_to_group(
 
 
 @jwt_required()
-@find_active_user(TeacherModel, TEACHER, check_jwt=True)
+@find_active_user(TEACHER, check_jwt=True)
 def appoint_subject_to_specialty(
-    teacher: TeacherModel, specialty_id: UUID
+    teacher: user_models.TeacherModel, specialty_id: UUID
 ) -> Tuple[Dict[str, Any], int]:
     """Allow the Head Teacher of specialty to appoint subjects
 
@@ -346,11 +360,11 @@ def appoint_subject_to_specialty(
      "data" of the appointed items and status code for the Response
     """
     data = request.get_json()
-    subject_ids = data.get("subject_ids", None)
+    subject_ids = subject_uuid_list_schema.load(data)["subject_ids"]
     specialty = get_entity_with_teacher(
-        teacher, specialty_id, SpecialtyModel, SPECIALTY
+        teacher, specialty_id, specialty_models.SpecialtyModel, SPECIALTY
     )
-    subjects = get_items(SUBJECT, subject_ids, SubjectModel)
+    subjects = get_items(SUBJECT, subject_ids, subject_models.SubjectModel)
     specialty.subjects.extend(subjects)
     specialty.save_to_db()
     specialty_json = specialty_schema.dump(specialty)
@@ -361,9 +375,9 @@ def appoint_subject_to_specialty(
 
 
 @jwt_required()
-@find_active_user(TeacherModel, TEACHER, check_jwt=True)
+@find_active_user(TEACHER, check_jwt=True)
 def appoint_subject_to_group(
-    teacher: TeacherModel, group_id: UUID
+    teacher: user_models.TeacherModel, group_id: UUID
 ) -> Tuple[Dict[str, Any], int]:
     """Allow the Curator of group to appoint subjects to group
 
@@ -376,9 +390,11 @@ def appoint_subject_to_group(
      "data" of the appointed items and status code for the Response
     """
     data = request.get_json()
-    subject_ids = data.get("subject_ids", None)
-    group = get_entity_with_teacher(teacher, group_id, GroupModel, GROUP)
-    subjects = get_items(SUBJECT, subject_ids, SubjectModel)
+    subject_ids = subject_uuid_list_schema.load(data)["subject_ids"]
+    group = get_entity_with_teacher(
+        teacher, group_id, group_models.GroupModel, GROUP
+    )
+    subjects = get_items(SUBJECT, subject_ids, subject_models.SubjectModel)
     group.subjects.extend(subjects)
     group.save_to_db()
     group_json = group_schema.dump(group)
@@ -392,9 +408,9 @@ def appoint_subject_to_group(
 
 
 @jwt_required()
-@find_active_user(TeacherModel, TEACHER, check_jwt=True)
+@find_active_user(TEACHER, check_jwt=True)
 def remove_subject_from_teacher(
-    teacher: TeacherModel, subject_id: UUID
+    teacher: user_models.TeacherModel, subject_id: UUID
 ) -> Tuple[Dict[str, Any], int]:
     """Allow the Teacher to disappoint specific subject
 
@@ -406,7 +422,7 @@ def remove_subject_from_teacher(
     :return: Tuple with a dictionary that contains 'message',
     of the disappointed item, "data" of the present state and status code for the Response
     """
-    subject = SubjectModel.get_by_id(subject_id)
+    subject = subject_models.SubjectModel.get_by_id(subject_id)
     if not subject:
         raise SearchException(
             NOT_FOUND_BY_ID.format(SUBJECT, subject_id), status_code=400
@@ -423,9 +439,9 @@ def remove_subject_from_teacher(
 
 
 @jwt_required()
-@find_active_user(TeacherModel, TEACHER, check_jwt=True)
+@find_active_user(TEACHER, check_jwt=True)
 def remove_subjects_from_teacher(
-    teacher: TeacherModel,
+    teacher: user_models.TeacherModel,
 ) -> Tuple[Dict[str, Any], int]:
     """Allow the Teacher to disappoint subjects
 
@@ -436,8 +452,8 @@ def remove_subjects_from_teacher(
      "data" of the present state and status code for the Response
     """
     data = request.get_json()
-    subject_ids = data.get("subject_ids", None)
-    subjects = get_items(SUBJECT, subject_ids, SubjectModel)
+    subject_ids = subject_uuid_list_schema.load(data)["subject_ids"]
+    subjects = get_items(SUBJECT, subject_ids, subject_models.SubjectModel)
     remove_items_from_entity(
         teacher.subjects, TEACHER, teacher.id, subjects, SUBJECT
     )
@@ -450,9 +466,9 @@ def remove_subjects_from_teacher(
 
 
 @jwt_required()
-@find_active_user(TeacherModel, TEACHER, check_jwt=True)
+@find_active_user(TEACHER, check_jwt=True)
 def remove_student_from_group(
-    teacher: TeacherModel, group_id: UUID
+    teacher: user_models.TeacherModel, group_id: UUID
 ) -> Tuple[Dict[str, Any], int]:
     """Allow the Curator of group to disappoint students
 
@@ -465,11 +481,11 @@ def remove_student_from_group(
     of the disappointed items, "data" of the present state and status code for the Response
     """
     data = request.get_json()
-    student_ids = data.get("student_ids", None)
-    if not student_ids:
-        raise NotProvided(DATA_NOT_PROVIDED("student_ids"))
-    group = get_entity_with_teacher(teacher, group_id, GroupModel, GROUP)
-    students = get_items(STUDENT, student_ids, StudentModel)
+    student_ids = student_uuid_list_schema.load(data)["student_ids"]
+    group = get_entity_with_teacher(
+        teacher, group_id, group_models.GroupModel, GROUP
+    )
+    students = get_items(STUDENT, student_ids, user_models.StudentModel)
     remove_items_from_entity(
         group.students, GROUP, group.id, students, STUDENT
     )
@@ -482,9 +498,9 @@ def remove_student_from_group(
 
 
 @jwt_required()
-@find_active_user(TeacherModel, TEACHER, check_jwt=True)
+@find_active_user(TEACHER, check_jwt=True)
 def remove_subject_from_specialty(
-    teacher: TeacherModel, specialty_id: UUID
+    teacher: user_models.TeacherModel, specialty_id: UUID
 ) -> Tuple[Dict[str, Any], int]:
     """Allow the Head Teacher of specialty to disappoint subjects
 
@@ -497,11 +513,11 @@ def remove_subject_from_specialty(
      of the disappointed items, "data" of the present state and status code for the Response
     """
     data = request.get_json()
-    subject_ids = data.get("subject_ids", None)
+    subject_ids = subject_uuid_list_schema.load(data)["subject_ids"]
     specialty = get_entity_with_teacher(
-        teacher, specialty_id, SpecialtyModel, SPECIALTY
+        teacher, specialty_id, specialty_models.SpecialtyModel, SPECIALTY
     )
-    subjects = get_items(SUBJECT, subject_ids, SubjectModel)
+    subjects = get_items(SUBJECT, subject_ids, subject_models.SubjectModel)
     remove_items_from_entity(
         specialty.subjects, SPECIALTY, specialty.id, subjects, SUBJECT
     )
@@ -514,9 +530,9 @@ def remove_subject_from_specialty(
 
 
 @jwt_required()
-@find_active_user(TeacherModel, TEACHER, check_jwt=True)
+@find_active_user(TEACHER, check_jwt=True)
 def remove_subject_from_group(
-    teacher: TeacherModel, group_id: UUID
+    teacher: user_models.TeacherModel, group_id: UUID
 ) -> Tuple[Dict[str, Any], int]:
     """Allow the Curator of group to disappoint subjects from group
 
@@ -529,9 +545,11 @@ def remove_subject_from_group(
      of the disappointed items, "data" of the present state and status code for the Response
     """
     data = request.get_json()
-    subject_ids = data.get("subject_ids", None)
-    group = get_entity_with_teacher(teacher, group_id, GroupModel, GROUP)
-    subjects = get_items(SUBJECT, subject_ids, SubjectModel)
+    subject_ids = subject_uuid_list_schema.load(data)["subject_ids"]
+    group = get_entity_with_teacher(
+        teacher, group_id, group_models.GroupModel, GROUP
+    )
+    subjects = get_items(SUBJECT, subject_ids, subject_models.SubjectModel)
     remove_items_from_entity(
         group.subjects, GROUP, group.id, subjects, SUBJECT
     )

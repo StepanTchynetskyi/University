@@ -3,8 +3,14 @@ class CreateException(Exception):
         super(CreateException, self).__init__(message)
 
 
-class SearchException(Exception):
+class UpdateException(Exception):
     def __init__(self, message, status_code=400):
+        super(UpdateException, self).__init__(message)
+        self.status_code = status_code
+
+
+class SearchException(Exception):
+    def __init__(self, message, status_code=404):
         super(SearchException, self).__init__(message)
         self.status_code = status_code
 

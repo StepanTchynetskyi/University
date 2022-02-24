@@ -26,7 +26,11 @@ DISAPPOINT_ITEM = "{} disappointed from {}"
 ITEM_NOT_PROVIDED = "{} Field Is Not Provided."
 EMAIL_DOES_NOT_EXISTS = "User <email={}> Does Not Exist."
 EMAIL_NOT_ACTIVE_USER = "User with <email={}> is not Active."
-ITEM_NOT_FOUND_IN_ARRAY = "{} <id={}> not found in {} <id=>"
+ITEM_NOT_FOUND_IN_ARRAY = "{} <id={}> not found in {} <id={}>"
+ASSIGNMENT_NOT_FOUND_IN_SUBJECT = (
+    "Assignment <id={}> not found in Subject <id={}>"
+)
+IMPOSSIBLE_TO_UPDATE = "Impossible to update {} field"
 
 STUDENT = "Student"
 TEACHER = "Teacher"
@@ -35,6 +39,7 @@ POSITION = "Position"
 SPECIALTY = "Specialty"
 SUBJECT = "Subject"
 GROUP = "Group"
+ASSIGNMENT = "Assignment"
 
 HAS_LOWERCASE_LETTERS = re.compile(r"[a-z]")
 HAS_UPPERCASE_LETTERS = re.compile(r"[A-Z]")

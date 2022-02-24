@@ -2,4 +2,5 @@
 omit =
     */site-packages/*
     */distutils/*
+    *__init__*
     tests/*

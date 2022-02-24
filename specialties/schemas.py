@@ -1,6 +1,6 @@
 from marshmallow import EXCLUDE, validates, ValidationError
 from application.ma import ma
-from specialties.models import SpecialtyModel
+from specialties import models as specialty_models
 
 
 class SpecialtySchema(ma.SQLAlchemyAutoSchema):
@@ -10,7 +10,7 @@ class SpecialtySchema(ma.SQLAlchemyAutoSchema):
     subjects = ma.Nested("SubjectSchema", many=True, exclude=("specialties",))
 
     class Meta:
-        model = SpecialtyModel
+        model = specialty_models.SpecialtyModel
         load_instance = True
         unknown = EXCLUDE
         dump_only = ("id", "created_on", "updated_on")

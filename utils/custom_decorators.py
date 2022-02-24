@@ -3,6 +3,7 @@ from functools import wraps
 
 from flask_jwt_extended import get_jwt_identity
 
+from users import models as user_models
 from utils.constants import (
     NOT_FOUND_BY_ID,
     NOT_ACTIVE_USER,
@@ -16,7 +17,7 @@ from utils.custom_exceptions import (
 )
 
 
-def find_active_user(specific_model, user_type, *, check_jwt=False):
+def find_active_user(user_type, *, check_jwt=False):
     def decorator(func):
         @wraps(func)
         def wrapper(**kwargs):
@@ -24,7 +25,7 @@ def find_active_user(specific_model, user_type, *, check_jwt=False):
                 user_id = kwargs.pop("student_id")
             else:
                 user_id = kwargs.pop("teacher_id")
-            specific_user = specific_model.get_by_id(user_id)
+            specific_user = user_models.UserModel.get_by_id(user_id)
             if not specific_user:
                 raise SearchException(
                     message=NOT_FOUND_BY_ID.format(user_type, user_id),
@@ -51,7 +52,7 @@ def find_active_user(specific_model, user_type, *, check_jwt=False):
 def create_obj_with_name_and_year(model, model_type, schema, request):
     def decorator(func):
         @wraps(func)
-        def wrapper():
+        def wrapper(*args):
             requested_json = request.get_json()
             schema_obj = schema.load(requested_json)
             obj = model.get_by_name_and_year(
@@ -63,7 +64,7 @@ def create_obj_with_name_and_year(model, model_type, schema, request):
                         model_type, obj.name, obj.year
                     )
                 )
-            return func(schema_obj, requested_json)
+            return func(schema_obj, requested_json, *args)
 
         return wrapper
 

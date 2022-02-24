@@ -1,6 +1,6 @@
 from marshmallow import EXCLUDE, validates, ValidationError
 from application.ma import ma
-from groups.models import GroupModel
+from groups import models as group_models
 
 
 class GroupSchema(ma.SQLAlchemyAutoSchema):
@@ -16,7 +16,7 @@ class GroupSchema(ma.SQLAlchemyAutoSchema):
     )
 
     class Meta:
-        model = GroupModel
+        model = group_models.GroupModel
         load_instance = True
         unknown = EXCLUDE
         dump_only = ("id", "created_on", "updated_on")

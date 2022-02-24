@@ -1,37 +1,36 @@
-from typing import Dict, Type, Union
+from typing import Dict, Type, Union, List
 import uuid
 
 import bcrypt
 
-from marshmallow import ValidationError
 from flask import Request
 
-from groups.models import GroupModel
-from specialties.models import SpecialtyModel
-from subjects.models import SubjectModel
-from users.models import TeacherModel, StudentModel
+from assignments import models as assignment_models
+from groups import models as group_models
+from specialties import models as specialty_models
+from subjects import models as subject_models
+from users import models as user_models
 from utils.constants import (
     DOES_NOT_EXIST,
     NOT_ACTIVE_USER,
     NOT_FOUND_BY_ID,
     PERMISSION_DENIED,
     GROUP,
+    SUBJECT,
     ALREADY_EXISTS_WITH_YEAR,
     EntityInfo,
+    ITEM_NOT_FOUND_IN_ARRAY,
 )
 from utils.custom_exceptions import (
     SearchException,
 )
 
 
-def is_active_user(
-    json_: Dict, user_model: Type[TeacherModel], user_type: str
-) -> None:
+def is_active_user(json_: Dict, user_type: str) -> None:
     """Checks for an active user
 
     :param json_: user_json
-    :param user_model: a specific user model
-    :type user_model: TeacherModel
+    :type json_: Dict
     :param user_type: a specific user type('Teacher')
     :type user_type: str
     :return: None
@@ -40,7 +39,7 @@ def is_active_user(
     """
     user_id = json_.get("teacher_id", None)
     if user_id:
-        teacher = user_model.get_by_id(user_id)
+        teacher = user_models.UserModel.get_by_id(user_id)
         if not teacher:
             raise SearchException(
                 DOES_NOT_EXIST.format(user_type, user_id), 404
@@ -75,8 +74,10 @@ def update_obj_with_name_and_year(
     entity_info: EntityInfo,
     request: Request,
     *,
-    user_model: Union[Type[StudentModel], Type[TeacherModel]] = None,
-    user_type: str = None
+    user_model: Union[
+        Type[user_models.StudentModel], Type[user_models.TeacherModel]
+    ] = None,
+    user_type: str = None,
 ) -> Dict:
     """Updates
 
@@ -100,20 +101,22 @@ def update_obj_with_name_and_year(
         )
     entity_json = request.get_json()
     if user_model:
-        is_active_user(entity_json, user_model, user_type)
-    check_accessibility_for_name_and_year(
-        entity_obj, entity_json, entity_info.model, entity_info.type
-    )
+        is_active_user(entity_json, user_type)
+
     entity_obj = entity_info.schema.load(
         entity_json, instance=entity_obj, partial=True
     )
+    check_accessibility_for_name_and_year(
+        entity_obj, entity_json, entity_info.model, entity_info.type
+    )
+
     entity_obj.save_to_db()
     entity_json = entity_info.schema.dump(entity_obj)
     return entity_json
 
 
 def get_entity_with_teacher(
-    teacher: TeacherModel,
+    teacher: user_models.TeacherModel,
     entity_id: uuid.UUID,
     entity_model: Type[GROUP],
     entity_type: str,
@@ -133,18 +136,29 @@ def get_entity_with_teacher(
     entity = entity_model.get_by_id(entity_id)
     if not entity:
         raise SearchException(NOT_FOUND_BY_ID.format(entity_type, entity_id))
-    entity_teacher_id = (
-        entity.curator_id if entity_type == GROUP else entity.teacher_id
-    )
-    if entity_teacher_id != teacher.id:
+    if entity_type == SUBJECT:
+        entity_teacher_ids = [teacher.id for teacher in entity.teachers]
+    else:
+        entity_teacher_ids = (
+            entity.curator_id if entity_type == GROUP else entity.teacher_id,
+        )
+    if teacher.id not in entity_teacher_ids:
         raise PermissionError(PERMISSION_DENIED.format(str(teacher.id)))
     return entity
 
 
 def check_accessibility_for_name_and_year(
-    entity_obj: Union[SubjectModel, GroupModel, SpecialtyModel],
+    entity_obj: Union[
+        subject_models.SubjectModel,
+        group_models.GroupModel,
+        specialty_models.SpecialtyModel,
+    ],
     entity_json: Dict,
-    model: Union[Type[SubjectModel], Type[GroupModel], Type[SpecialtyModel]],
+    model: Union[
+        Type[subject_models.SubjectModel],
+        Type[group_models.GroupModel],
+        Type[specialty_models.SpecialtyModel],
+    ],
     entity_type: str,
 ) -> None:
     """Checks accessibility for objects with name and year
@@ -162,35 +176,74 @@ def check_accessibility_for_name_and_year(
     :raises:
         SearchException: if entity object with name and year already exists
     """
-    year = entity_json.get("year", None)
-    name = entity_json.get("name", None)
-    if year or name:
-        year, name = year or entity_obj.year, name or entity_obj.name
-        if isinstance(year, int):
-            searched_obj = model.get_by_name_and_year(name, year)
-            if searched_obj:
-                raise SearchException(
-                    ALREADY_EXISTS_WITH_YEAR.format(
-                        entity_type,
-                        searched_obj.name,
-                        searched_obj.year,
-                        400,
-                    )
-                )
-        else:
-            raise ValidationError({"year": "Not a valid integer"})
+    year = entity_json.get("year", None) or entity_obj.year
+    name = entity_json.get("name", None) or entity_obj.name
+    searched_obj = model.get_by_name_and_year(name, year)
+    if searched_obj:
+        raise SearchException(
+            ALREADY_EXISTS_WITH_YEAR.format(
+                entity_type,
+                searched_obj.name,
+                searched_obj.year,
+                400,
+            )
+        )
 
 
-def validate_uuid(uuid_: str) -> None:
-    """Validates string like UUID
+def get_entity(
+    entity_id: uuid.UUID,
+    entity_model: Type[subject_models.SubjectModel],
+    entity_type: str,
+) -> subject_models.SubjectModel:
+    """Gets a specific entity
 
-    :param uuid_: uuid that should be checked
-    :type uuid_: str
-    :return: None
+    :param entity_id: a specific entity id
+    :type entity_id: UUID
+    :param entity_model: a specific entity model
+    :type entity_model: Type[SubjectModel]
+    :param entity_type: a specific entity type("SUBJECT")
+    :type entity_type: str
+    :return: a specific entity object
     :raises:
-        ValueError: if uuid is not valid
+        SearchException: if entity not found
     """
-    try:
-        uuid.UUID(uuid_, version=4)
-    except ValueError:
-        raise ValueError("Invalid uuid <uuid={}>".format(uuid_))
+    entity = entity_model.get_by_id(entity_id)
+    if not entity:
+        raise SearchException(DOES_NOT_EXIST.format(entity_type, entity_id))
+    return entity
+
+
+def get_item_from_entity(
+    entity_id: uuid.UUID,
+    entity_items: List[
+        Union[subject_models.SubjectModel, assignment_models.AssignmentModel]
+    ],
+    item_id: uuid.UUID,
+    entity_type: str,
+    item_type: str,
+) -> Union[subject_models.SubjectModel, assignment_models.AssignmentModel]:
+    """Gets an item from the entity items list
+
+    :param entity_id: a specific entity uuid
+    :type entity_id: UUID
+    :param entity_items: list of entity items
+    :type entity_items:List[Union[SubjectModel, AssignmentModel]]
+    :param item_id: searched item uuid
+    :type item_id: UUID
+    :param entity_type: entity type (Teacher)
+    :type entity_type: str
+    :param item_type: searched item type (Subject, Assignment)
+    :type item_type: str
+    :return: searched item (SubjectModel, AssignmentModel)
+    :raises:
+        SearchException: if item not found in entity items
+    """
+    for item in entity_items:
+        if str(item.id) == str(item_id):
+            return item
+    else:
+        raise SearchException(
+            ITEM_NOT_FOUND_IN_ARRAY.format(
+                item_type, item_id, entity_type, entity_id
+            )
+        )

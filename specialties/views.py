@@ -1,8 +1,8 @@
 from flask import request
 
-from specialties.schemas import SpecialtySchema
-from specialties.models import SpecialtyModel
-from users.models import TeacherModel
+from specialties import schemas as specialty_schemas
+from specialties import models as specialty_models
+from users import models as user_models
 from utils.constants import (
     CREATED_SUCCESSFULLY,
     SPECIALTY,
@@ -15,20 +15,21 @@ from utils.constants import (
 from utils.custom_decorators import (
     create_obj_with_name_and_year,
 )
+from utils.custom_exceptions import SearchException
 from utils.utils import (
     is_active_user,
     update_obj_with_name_and_year,
 )
 
 
-specialty_schema = SpecialtySchema()
+specialty_schema = specialty_schemas.SpecialtySchema()
 
 
 @create_obj_with_name_and_year(
-    SpecialtyModel, SPECIALTY, specialty_schema, request
+    specialty_models.SpecialtyModel, SPECIALTY, specialty_schema, request
 )
 def create_specialty(specialty, specialty_json):
-    is_active_user(specialty_json, TeacherModel, TEACHER)
+    is_active_user(specialty_json, TEACHER)
     specialty.save_to_db()
     specialty_json = specialty_schema.dump(specialty)
     return {
@@ -40,26 +41,30 @@ def create_specialty(specialty, specialty_json):
 def get_specialties():
     specialties = [
         specialty_schema.dump(specialty)
-        for specialty in SpecialtyModel.get_all_records()
+        for specialty in specialty_models.SpecialtyModel.get_all_records()
     ]
-    return {"data": specialties}, 200
+    return {"data": {"specialties": specialties}}, 200
 
 
 def get_specialty(specialty_id):
-    specialty = SpecialtyModel.get_by_id(specialty_id)
+    specialty = specialty_models.SpecialtyModel.get_by_id(specialty_id)
     if not specialty:
-        return {
-            "message": NOT_FOUND_BY_ID.format(SPECIALTY, specialty_id)
-        }, 400
+        raise SearchException(NOT_FOUND_BY_ID.format(SPECIALTY, specialty_id))
     return {"data": specialty_schema.dump(specialty)}, 200
 
 
 def update_specialty(specialty_id):
     specialty_info = EntityInfo(
-        specialty_id, SpecialtyModel, specialty_schema, SPECIALTY
+        specialty_id,
+        specialty_models.SpecialtyModel,
+        specialty_schema,
+        SPECIALTY,
     )
     specialty_json = update_obj_with_name_and_year(
-        specialty_info, request, user_model=TeacherModel, user_type=TEACHER
+        specialty_info,
+        request,
+        user_model=user_models.TeacherModel,
+        user_type=TEACHER,
     )
     return {
         "message": UPDATED_SUCCESSFULLY.format(SPECIALTY, specialty_id),
@@ -68,11 +73,9 @@ def update_specialty(specialty_id):
 
 
 def delete_specialty(specialty_id):
-    specialty = SpecialtyModel.get_by_id(specialty_id)
+    specialty = specialty_models.SpecialtyModel.get_by_id(specialty_id)
     if not specialty:
-        return {
-            "message": NOT_FOUND_BY_ID.format(SPECIALTY, specialty_id)
-        }, 400
+        raise SearchException(NOT_FOUND_BY_ID.format(SPECIALTY, specialty_id))
     specialty.remove_from_db()
     return {
         "message": SUCCESSFULLY_DELETED.format(SPECIALTY, specialty_id)

@@ -1,13 +1,13 @@
 from marshmallow import EXCLUDE, validates, ValidationError
 from application.ma import ma
-from positions.models import PositionModel
+from positions import models as position_models
 
 
 class PositionSchema(ma.SQLAlchemyAutoSchema):
     teachers = ma.Nested("TeacherSchema", many=True, exclude=("position",))
 
     class Meta:
-        model = PositionModel
+        model = position_models.PositionModel
         load_instance = True
         unknown = EXCLUDE
         dump_only = ("id", "created_on", "updated_on")
