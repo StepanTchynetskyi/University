@@ -1,5 +1,9 @@
 # University
 
+## Database Schema
+![alt text](https://github.com/StepanTchynetskyi/University/blob/main/db_schema_img/database_schema.png?raw=true)
+
+
 ### To start project locally with docker-compose add .env.docker file with such content
 ```
 SECRET_KEY=YOUR_SECRET_KEY(uuid4)
